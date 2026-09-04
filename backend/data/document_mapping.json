@@ -1,0 +1,22 @@
+﻿[
+  {
+    "id": 0,
+    "filename": "employee_handbook.pdf",
+    "content": "Employees receive 20 annual leave days"
+  },
+  {
+    "id": 1,
+    "filename": "employee_handbook.pdf",
+    "content": "Remote work is allowed 3 days per week"
+  },
+  {
+    "id": 2,
+    "filename": "travel_policy.pdf",
+    "content": "Hotel reimbursement is limited to $200 per night"
+  },
+  {
+    "id": 3,
+    "filename": "travel_policy.pdf",
+    "content": "Flights must be economy class"
+  }
+]
