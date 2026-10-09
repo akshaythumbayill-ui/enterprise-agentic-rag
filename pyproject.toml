@@ -1,2 +1,13 @@
+[project]
+name = "enterprise-agentic-rag"
+version = "0.1.0"
+description = "Enterprise Agentic RAG Application"
+requires-python = ">=3.11"
+dependencies = [
+    "fastapi",
+    "uvicorn",
+    "python-dotenv",
+]
+
 [tool.vercel]
 entrypoint = "backend.main:app"
