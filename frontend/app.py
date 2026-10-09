@@ -1,4 +1,6 @@
+import hashlib
 import os
+import re
 import requests
 import streamlit as st
 from datetime import datetime
@@ -497,6 +499,74 @@ p {
     margin-top: 0.25rem;
 }
 
+
+/* Chatbot space redesign */
+.block-container { max-width: 1480px; padding: 2rem 3rem 4rem; }
+.stApp > header { background: transparent; }
+.login-container {
+    max-width: 760px; margin: 2.5rem auto 1.25rem; padding: 2.25rem 2rem 1.5rem;
+    border-radius: 1.75rem;
+    background: radial-gradient(circle at 15% 15%, rgba(99,102,241,.22), transparent 32%), radial-gradient(circle at 85% 10%, rgba(6,182,212,.18), transparent 30%), linear-gradient(135deg,#111827,#1e293b);
+    box-shadow: 0 24px 70px rgba(15,23,42,.22);
+}
+.login-header { margin-bottom: 0; }
+.login-logo { display:inline-flex; align-items:center; justify-content:center; width:4.75rem; height:4.75rem; border-radius:1.5rem; background:linear-gradient(135deg,#f472b6,#8b5cf6 65%,#22d3ee); box-shadow:0 14px 28px rgba(139,92,246,.35); font-size:2.5rem; }
+.login-title { color:#f8fafc; font-size:3rem; letter-spacing:-.05em; }
+.login-subtitle { color:#cbd5e1; font-size:1.08rem; }
+.login-card { max-width:560px; margin:0 auto; padding:1.75rem 2rem 2rem; border:1px solid rgba(148,163,184,.25); border-radius:1.5rem; background:rgba(255,255,255,.96); box-shadow:0 24px 60px rgba(15,23,42,.18); }
+.login-card h3 { color:#0f172a; font-family:'Inter',sans-serif; font-size:1.35rem !important; }
+.login-card [data-baseweb="input"] { border-radius:.85rem; }
+.login-card button[kind="primary"] { border-radius:.85rem; background:linear-gradient(135deg,#4f46e5,#0891b2); border:none; box-shadow:0 10px 20px rgba(79,70,229,.2); }
+.login-card button[kind="primary"]:hover { transform:translateY(-1px); }
+.dashboard-header { position:relative; overflow:hidden; border:1px solid rgba(99,102,241,.18); border-radius:1.5rem; background:radial-gradient(circle at 92% 20%,rgba(34,211,238,.16),transparent 25%),linear-gradient(135deg,#fff,#eef2ff); padding:2rem 2.25rem; box-shadow:0 12px 30px rgba(15,23,42,.06); }
+.dashboard-title { font-size:2.35rem; letter-spacing:-.04em; }
+.chat-container { max-width:1080px; min-height:300px; margin:0 auto 1rem; padding:2.5rem 2rem; border:1px solid rgba(99,102,241,.16); border-radius:1.5rem; background:radial-gradient(circle at 15% 10%,rgba(99,102,241,.08),transparent 30%),linear-gradient(180deg,#fff,#f8fafc); box-shadow:0 14px 35px rgba(15,23,42,.06); }
+.empty-chat-icon { display:inline-flex; align-items:center; justify-content:center; width:4.5rem; height:4.5rem; border-radius:1.35rem; background:linear-gradient(135deg,#eef2ff,#cffafe); font-size:2.25rem; box-shadow:0 12px 24px rgba(79,70,229,.14); }
+.empty-chat-title { margin:1rem 0 .5rem; font-family:'Inter',sans-serif; font-size:1.65rem !important; }
+.empty-chat-copy { max-width:560px; margin:0 auto 1.35rem; color:#64748b; }
+.prompt-chip { display:inline-block; margin:.3rem; padding:.55rem .85rem; border:1px solid #c7d2fe; border-radius:999px; background:rgba(255,255,255,.8); color:#4338ca; font-size:.82rem; font-weight:600; }
+[data-testid="stChatMessage"] { max-width:1080px; margin:0 auto .85rem; padding:.9rem 1.1rem; border:1px solid #e2e8f0; border-radius:1.2rem; background:#fff; box-shadow:0 8px 22px rgba(15,23,42,.055); }
+[data-testid="stChatMessage"]:has([data-testid="stChatMessageAvatarUser"]) { border-color:#c7d2fe; background:linear-gradient(135deg,#eef2ff,#fff); }
+[data-testid="stChatMessage"]:has([data-testid="stChatMessageAvatarAssistant"]) { border-color:#bae6fd; background:linear-gradient(135deg,#f0f9ff,#fff); }
+[data-testid="stChatMessageContent"] p { color:#1e293b; line-height:1.7; }
+[data-testid="stChatInput"] { max-width:1080px; margin:1.2rem auto 0; }
+[data-testid="stChatInput"] textarea { min-height:58px; border:2px solid #c7d2fe; border-radius:1.15rem; background:#fff; box-shadow:0 12px 28px rgba(79,70,229,.12); }
+[data-testid="stChatInput"] textarea:focus { border-color:#6366f1; box-shadow:0 0 0 4px rgba(99,102,241,.14),0 12px 28px rgba(79,70,229,.12); }
+[data-testid="stChatInput"] textarea::placeholder { color:#64748b !important; opacity:1 !important; }
+[data-testid="stChatInput"] textarea { color:#0f172a !important; }
+.source-reference { max-width:1080px; margin-left:auto; margin-right:auto; border-radius:.8rem; background:rgba(248,250,252,.72); padding:.75rem 1rem; }
+@media (max-width:768px) { .block-container{padding:1rem .9rem 3rem;} .login-container{margin:1rem auto;padding:1.5rem 1rem;} .login-title{font-size:2.25rem;} .login-card{padding:1.25rem;} .dashboard-header{padding:1.35rem;} .chat-container{padding:1.5rem 1rem;} }
+
+
+.login-card { display:none; }
+[data-testid="stTabs"] { max-width:560px; margin:0 auto; }
+[data-testid="stTabs"] [data-baseweb="tab-list"] { gap:.35rem; padding:.35rem; border-radius:1rem; background:#e2e8f0; }
+[data-testid="stTabs"] [data-baseweb="tab"] { flex:1; justify-content:center; border-radius:.75rem; color:#475569; font-weight:600; }
+[data-testid="stTabs"] [aria-selected="true"] { background:#fff; color:#4338ca; box-shadow:0 4px 12px rgba(15,23,42,.08); }
+[data-testid="stTabs"] [data-baseweb="tab-highlight"] { display:none; }
+[data-testid="stTabs"] [data-baseweb="tab-panel"] { margin-top:.75rem; padding:1.75rem 2rem 2rem; border:1px solid #e2e8f0; border-radius:1.5rem; background:rgba(255,255,255,.97); box-shadow:0 24px 60px rgba(15,23,42,.14); }
+[data-testid="stTabs"] [data-baseweb="tab-panel"] h3 { color:#0f172a; font-family:'Inter',sans-serif; font-size:1.35rem !important; }
+[data-testid="stTabs"] [data-baseweb="input"] { border-radius:.85rem; }
+[data-testid="stTabs"] button[kind="primary"] { border-radius:.85rem; background:linear-gradient(135deg,#4f46e5,#0891b2); border:none; box-shadow:0 10px 20px rgba(79,70,229,.2); }
+
+
+div[data-testid="stHorizontalBlock"] button {
+    min-height: 3rem;
+    border: 1px solid #c7d2fe;
+    border-radius: 999px;
+    background: rgba(255,255,255,.88);
+    color: #4338ca;
+    font-weight: 600;
+    transition: all .2s ease;
+}
+div[data-testid="stHorizontalBlock"] button:hover {
+    border-color: #6366f1;
+    background: #eef2ff;
+    color: #3730a3;
+    transform: translateY(-1px);
+    box-shadow: 0 8px 18px rgba(79,70,229,.12);
+}
+
 /* Responsive */
 @media (max-width: 768px) {
     .login-container {
@@ -533,6 +603,58 @@ if "messages" not in st.session_state:
 if "page" not in st.session_state:
     st.session_state.page = "login"
 
+def _format_api_detail(detail):
+    """Turn FastAPI/Pydantic error payloads into readable UI messages."""
+    if isinstance(detail, dict):
+        errors = detail.get("errors")
+        if isinstance(errors, list):
+            detail = errors
+        elif detail.get("message"):
+            return str(detail["message"])
+    if isinstance(detail, list):
+        messages = []
+        for item in detail:
+            if isinstance(item, dict):
+                message = item.get("msg") or item.get("message") or "Invalid value."
+                location = item.get("loc") or []
+                field = next((str(value) for value in reversed(location) if value not in {"body", "query", "path"}), "")
+                messages.append(f"{field}: {message}" if field else str(message))
+            else:
+                messages.append(str(item))
+        return " ".join(messages)
+    return str(detail or "The request could not be completed.")
+
+
+def _unique_uploads(uploads):
+    """Deduplicate repeated browser upload entries by filename and content."""
+    unique = []
+    seen = set()
+    for upload in uploads or []:
+        contents = upload.getvalue()
+        fingerprint = (upload.name, len(contents), hashlib.sha256(contents).hexdigest())
+        if fingerprint in seen:
+            continue
+        seen.add(fingerprint)
+        unique.append((upload, contents))
+    return unique
+
+
+def _clean_answer_markers(answer):
+    """Remove internal task-reference tokens before displaying an answer."""
+    if not answer:
+        return answer
+    answer = re.sub(
+        r"[\u3010\[]\s*Task\s*\d+\s*(?:answer|source)\s*[\u3011\]]",
+        "",
+        answer,
+        flags=re.IGNORECASE,
+    )
+    answer = re.sub(r"\u3010[^\u3011\n]*\u3011", "", answer)
+    answer = re.sub(r"\[[^\]]{1,200}\]\(https?://[^)]+\)", "", answer)
+    answer = re.sub(r"[ \t]+([.,;:])", r"\1", answer)
+    return re.sub(r"\n{3,}", "\n\n", answer).strip()
+
+
 def api_request(method, path, **kwargs):
     headers = kwargs.pop("headers", {})
     if st.session_state.token:
@@ -545,10 +667,31 @@ def api_request(method, path, **kwargs):
             detail = response.json().get("detail", "The request could not be completed.")
         except ValueError:
             detail = f"The service returned an unexpected response (HTTP {response.status_code})."
-        st.error(f"{detail} [{method} {path}]")
+        st.error(f"{_format_api_detail(detail)} [{method} {path}]")
     except requests.RequestException:
         st.error(f"The knowledge service is unavailable at {API_URL}. Please check that the backend is running.")
     return None
+
+
+def render_sources(sources):
+    """Render document filenames and web URLs without assuming one schema."""
+    if not sources:
+        return
+
+    st.markdown('<div class="source-reference"><strong>Sources:</strong></div>', unsafe_allow_html=True)
+    for source in sources:
+        if isinstance(source, str):
+            st.markdown(f"- {source}")
+            continue
+        label = source.get("filename") or source.get("title") or source.get("url", "Source")
+        url = source.get("url")
+        # Community discussions are useful leads but are not authoritative release sources.
+        if url and "discuss.python.org" in str(url).lower():
+            continue
+        if url:
+            st.markdown(f"- [{label}]({url})")
+        else:
+            st.markdown(f"- {label}")
 
 # Login Page
 if not st.session_state.token:
@@ -564,8 +707,6 @@ if not st.session_state.token:
     
     col1, col2, col3 = st.columns([1, 2, 1])
     with col2:
-        st.markdown('<div class="login-card">', unsafe_allow_html=True)
-        
         # Auth Tabs
         tab1, tab2 = st.tabs(["Sign In", "Create Account"])
         
@@ -595,8 +736,6 @@ if not st.session_state.token:
                     if result:
                         st.success("✓ Account created successfully! Please sign in.")
         
-        st.markdown('</div>', unsafe_allow_html=True)
-    
     st.stop()
 
 # Dashboard
@@ -634,16 +773,18 @@ with st.sidebar:
     st.markdown('<div class="section-header">Knowledge Base</div>', unsafe_allow_html=True)
     
     uploads = st.file_uploader("Upload Documents", type=["pdf"], accept_multiple_files=True, label_visibility="collapsed")
+    unique_uploads = _unique_uploads(uploads)
     
-    if uploads:
+    if unique_uploads:
         st.markdown('<div class="upload-section">', unsafe_allow_html=True)
         st.markdown('<div class="upload-icon">📄</div>', unsafe_allow_html=True)
-        st.markdown(f'<div class="upload-text">{len(uploads)} file(s) selected</div>', unsafe_allow_html=True)
+        count_label = "file" if len(unique_uploads) == 1 else "files"
+        st.markdown(f'<div class="upload-text">{len(unique_uploads)} {count_label} selected</div>', unsafe_allow_html=True)
         st.markdown('</div>', unsafe_allow_html=True)
         
         if st.button("📤 Upload & Index", use_container_width=True):
             with st.spinner("Processing documents..."):
-                files = [("files", (upload.name, upload.getvalue(), "application/pdf")) for upload in uploads]
+                files = [("files", (upload.name, contents, "application/pdf")) for upload, contents in unique_uploads]
                 if api_request("POST", "/api/documents/upload", files=files):
                     st.success("✓ Documents uploaded and indexed successfully!")
                     st.rerun()
@@ -687,7 +828,11 @@ st.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
-agentic_mode = st.checkbox("Enable Agentic RAG", value=False, help="Use advanced multi-step reasoning with reflection and self-correction")
+agentic_mode = st.checkbox(
+    "Enable Agentic RAG",
+    value=False,
+    help="Use multi-step reasoning, document retrieval, Tavily web search, reflection, and self-correction.",
+)
 
 # Stats Section
 if documents.get("documents"):
@@ -722,26 +867,37 @@ st.markdown('<div class="section-header">Conversation</div>', unsafe_allow_html=
 if not st.session_state.messages:
     st.markdown("""
     <div class="chat-container">
-        <div style="text-align: center; padding: 3rem; color: var(--text-muted);">
-            <div style="font-size: 3rem; margin-bottom: 1rem;">💬</div>
-            <h3>Start a Conversation</h3>
-            <p>Ask questions about your uploaded documents, request calculations, or get current time information.</p>
+        <div style="text-align: center;">
+            <div class="empty-chat-icon">💬</div>
+            <h3 class="empty-chat-title">Your AI workspace is ready</h3>
+            <p class="empty-chat-copy">Ask about your documents, explore current information, or use CogniFlow as your everyday knowledge partner.</p>
         </div>
     </div>
     """, unsafe_allow_html=True)
 
+    prompt_columns = st.columns(3)
+    quick_prompt = None
+    prompt_options = [
+        ("Summarize my documents", "Summarize my uploaded documents and highlight the key points."),
+        ("Find a policy detail", "Find the most relevant policy detail in my uploaded documents."),
+        ("Research a current topic", "Research a current topic and provide a concise, source-backed answer."),
+    ]
+    for column, (label, prompt) in zip(prompt_columns, prompt_options):
+        with column:
+            if st.button(label, key=f"quick_prompt_{label}", use_container_width=True):
+                quick_prompt = prompt
+else:
+    quick_prompt = None
+
 for message in st.session_state.messages:
     with st.chat_message(message["role"]):
-        st.markdown(message["content"])
-        if message.get("sources"):
-            st.markdown(f"""
-            <div class="source-reference">
-                <strong>Sources:</strong> {", ".join(message["sources"])}
-            </div>
-            """, unsafe_allow_html=True)
+        content = _clean_answer_markers(message["content"]) if message["role"] == "assistant" else message["content"]
+        st.markdown(content)
+        render_sources(message.get("sources", []))
 
 # Chat Input
 question = st.chat_input("Ask CogniFlow anything...")
+question = quick_prompt or question
 
 if question:
     st.session_state.messages.append({"role": "user", "content": question})
@@ -759,20 +915,16 @@ if question:
         
         if result:
             st.session_state.session_id = result["session_id"]
-            sources = [source["filename"] for source in result.get("sources", [])]
+            sources = result.get("sources", [])
             
-            st.markdown(result["answer"])
+            answer = _clean_answer_markers(result["answer"])
+            st.markdown(answer)
             
-            if sources:
-                st.markdown(f"""
-                <div class="source-reference">
-                    <strong>Sources:</strong> {", ".join(sources)}
-                </div>
-                """, unsafe_allow_html=True)
+            render_sources(sources)
             
             st.session_state.messages.append({
                 "role": "assistant", 
-                "content": result["answer"], 
+                "content": answer, 
                 "sources": sources
             })
 

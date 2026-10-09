@@ -3,7 +3,7 @@ from typing import Any, TypedDict
 from langgraph.graph import END, START, StateGraph
 
 from .planner_service import greeting_response, select_tool
-from tools import calculator_tool, rag_tool, time_tool
+from tools import calculator_tool, rag_tool, time_tool, web_search_tool
 
 
 class AgentState(TypedDict, total=False):
@@ -54,6 +54,12 @@ def calculator_node(state: AgentState):
     }
 
 
+def web_search_node(state: AgentState):
+    return {
+        "result": web_search_tool.run(state["question"])
+    }
+
+
 def select_tool_path(state: AgentState):
     return state["selected_tool"]
 
@@ -65,6 +71,7 @@ workflow.add_node("greeting", greeting_node)
 workflow.add_node("rag", rag_node)
 workflow.add_node("time", time_node)
 workflow.add_node("calculator", calculator_node)
+workflow.add_node("web_search", web_search_node)
 
 workflow.add_edge(START, "planner")
 
@@ -76,12 +83,14 @@ workflow.add_conditional_edges(
         "rag": "rag",
         "time": "time",
         "calculator": "calculator",
+        "web_search": "web_search",
     },
 )
 
 workflow.add_edge("rag", END)
 workflow.add_edge("time", END)
 workflow.add_edge("calculator", END)
+workflow.add_edge("web_search", END)
 workflow.add_edge("greeting", END)
 
 agent_graph = workflow.compile()

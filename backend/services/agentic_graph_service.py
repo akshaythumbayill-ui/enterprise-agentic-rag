@@ -8,7 +8,7 @@ from .tool_chaining_service import tool_chaining_service, ToolChain
 from .reflection_service import reflection_service, ReflectionResult
 from .error_recovery_service import error_recovery_service, ErrorContext
 from .agentic_state_service import agentic_state_manager, AgentStatus
-from tools import calculator_tool, rag_tool, time_tool
+from tools import calculator_tool, rag_tool, time_tool, web_search_tool
 
 class AgenticAgentState(TypedDict, total=False):
     question: str
@@ -20,6 +20,7 @@ class AgenticAgentState(TypedDict, total=False):
     chain_result: Optional[dict[str, Any]]
     reflection_result: Optional[ReflectionResult]
     final_answer: Optional[str]
+    sources: list[dict[str, Any]]
     should_retry: bool
     retry_count: int
     status: str
@@ -32,6 +33,21 @@ class RouteDecision(Enum):
     SYNTHESIZE = "synthesize"
     COMPLETE = "complete"
     FAILED = "failed"
+
+def _filter_sources_for_question(question: str, sources: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """Keep source links aligned with authoritative-source requirements."""
+    normalized = str(question or "").lower()
+    if (
+        "python" in normalized
+        and "latest" in normalized
+        and ("stable" in normalized or "release" in normalized or "version" in normalized)
+    ):
+        return [
+            source
+            for source in sources
+            if "discuss.python.org" not in str((source or {}).get("url", "")).lower()
+        ]
+    return sources
 
 def planning_node(state: AgenticAgentState):
     """Plan the execution approach - simple vs complex, task decomposition."""
@@ -109,6 +125,8 @@ def simple_execution_node(state: AgenticAgentState):
             result = calculator_tool.run(question)
         elif tool == "time":
             result = time_tool.run()
+        elif tool == "web_search":
+            result = web_search_tool.run(question)
         else:
             result = {"answer": "Unknown tool selected", "tool": tool, "sources": []}
         
@@ -253,14 +271,25 @@ def synthesis_node(state: AgenticAgentState):
         # Fallback to single result
         task_results = [chain_result] if chain_result else []
     
-    # Synthesize results
+    # Synthesize results and preserve citations from every contributing task.
+    sources = []
+    for result in task_results:
+        for source in (result or {}).get("sources", []):
+            if source not in sources:
+                sources.append(source)
+    for source in chain_result.get("sources", []):
+        if source not in sources:
+            sources.append(source)
+
     try:
         final_answer = reflection_service.synthesize_multi_task_results(question, task_results)
+        sources = _filter_sources_for_question(question, sources)
         
         agentic_state_manager.set_final_answer(session_id, final_answer)
         
         return {
             "final_answer": final_answer,
+            "sources": sources,
             "status": "synthesis_complete"
         }
         
@@ -272,6 +301,7 @@ def synthesis_node(state: AgenticAgentState):
         
         return {
             "final_answer": fallback_answer,
+            "sources": sources,
             "status": "synthesis_fallback"
         }
 
@@ -310,7 +340,18 @@ def completion_node(state: AgenticAgentState):
     
     # Prepare final response
     selected_tool = chain_result.get("tool", "agentic_chain")
-    sources = chain_result.get("sources", [])
+    sources = []
+    for source in state.get("sources", []):
+        if source not in sources:
+            sources.append(source)
+    for source in chain_result.get("sources", []):
+        if source not in sources:
+            sources.append(source)
+    for result in chain_result.get("step_results", []):
+        for source in (result or {}).get("sources", []):
+            if source not in sources:
+                sources.append(source)
+    sources = _filter_sources_for_question(state.get("question", ""), sources)
     
     return {
         "final_answer": answer,

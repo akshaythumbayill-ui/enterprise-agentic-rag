@@ -1,3 +1,4 @@
+import hashlib
 import json
 import logging
 import os
@@ -223,6 +224,7 @@ async def upload_documents(
     upload_dir.mkdir(parents=True, exist_ok=True)
 
     saved_files = []
+    seen_uploads = set()
 
     for file in files:
         filename = Path(file.filename or "").name
@@ -255,6 +257,10 @@ async def upload_documents(
         if not contents.startswith(b"%PDF"):
             raise HTTPException(status_code=400, detail=f"{sanitized_filename} is not a readable PDF.")
 
+        fingerprint = (sanitized_filename, hashlib.sha256(contents).hexdigest())
+        if fingerprint in seen_uploads:
+            continue
+        seen_uploads.add(fingerprint)
         destination.write_bytes(contents)
 
         saved_files.append(sanitized_filename)
@@ -316,6 +322,7 @@ def chat(
                 question_validation.sanitized_value,
                 history,
                 current_user["id"],
+                session_id,
             )
         else:
             result = route_question(

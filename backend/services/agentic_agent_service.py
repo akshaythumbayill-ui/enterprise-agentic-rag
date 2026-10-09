@@ -8,13 +8,14 @@ def route_question_agentic(
     question: str,
     conversation_history: str,
     user_id: int,
+    session_id: str | None = None,
 ) -> Dict[str, Any]:
     """
     Route questions through the agentic RAG system with multi-step reasoning,
     reflection, and adaptive capabilities.
     """
-    # Generate session ID for this interaction
-    session_id = str(uuid.uuid4())
+    # Reuse the API conversation session so Agentic state and chat history align.
+    session_id = session_id or str(uuid.uuid4())
     
     # Prepare initial state for the agentic graph
     initial_state = {

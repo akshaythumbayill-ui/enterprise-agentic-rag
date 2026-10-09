@@ -101,6 +101,9 @@ If the answer is unavailable in the documents, say:
             {
                 "id": document["id"],
                 "filename": document["filename"],
+                # Keep exact retrieved evidence available to agentic synthesis.
+                # The frontend renders only filename/url fields, so this remains internal.
+                "content": document["content"],
             }
             for document in documents
         ],

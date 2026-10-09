@@ -3,7 +3,7 @@ import re
 
 from .llm import ask_llm
 
-VALID_TOOLS = {"rag", "time", "calculator"}
+VALID_TOOLS = {"rag", "time", "calculator", "web_search"}
 GREETING_RESPONSES = {
     "hi": "Hi! How can I help you today?",
     "hello": "Hello! How can I help you today?",
@@ -30,6 +30,29 @@ def select_tool(
     normalized_question = question.lower()
     if any(word in normalized_question for word in ("what time", "current time", "today's date", "what date", "what day")):
         return "time"
+
+    web_search_markers = (
+        "search the web",
+        "search online",
+        "look up online",
+        "on the internet",
+        "latest news",
+        "current news",
+        "recent news",
+        "web search",
+        "online sources",
+        "latest information",
+        "as of today",
+        "current price",
+        "current status",
+        "current population",
+        "recently",
+    )
+    if any(marker in normalized_question for marker in web_search_markers) or (
+        "current " in normalized_question and "current time" not in normalized_question
+    ):
+        return "web_search"
+
     if any(symbol in normalized_question for symbol in ("+", "-", "*", "/", "%")) or any(
         word in normalized_question for word in ("calculate", "plus", "minus", "times", "divided")
     ):
@@ -41,6 +64,8 @@ You select one tool for an enterprise assistant.
 Tools:
 - "time": current date, day, time, or timezone questions.
 - "calculator": arithmetic or mathematical calculations.
+- "web_search": current events, recent facts, online research, or questions
+  that explicitly require web sources.
 - "rag": company policies, employee documents, travel policies,
   or any question not covered by the other tools.
 

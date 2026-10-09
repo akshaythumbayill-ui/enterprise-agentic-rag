@@ -13,7 +13,17 @@ pip install -r requirements.txt
 ```
 
 2. Copy `.env.example` to `.env`, set `GROQ_API_KEY`, and replace `JWT_SECRET_KEY` with a long random value.
-3. Start the API from the repository root:
+3. Optional: enable public web search by adding a Tavily key to `.env`:
+
+```env
+TAVILY_API_KEY=your-tavily-api-key
+TAVILY_MAX_RESULTS=5
+TAVILY_SEARCH_DEPTH=advanced
+```
+
+Without a key, web-search requests return a clear configuration message and document-only RAG continues to work.
+
+4. Start the API from the repository root:
 
 ```powershell
 $env:PYTHONPATH = "backend"

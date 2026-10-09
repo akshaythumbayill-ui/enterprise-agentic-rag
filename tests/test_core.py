@@ -5,8 +5,11 @@ import pytest
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "backend"))
 
-from tools.calculator_tool import run as calculate
-from tools.time_tool import run as current_time
+from tools.calculator_tool import calculator_tool
+from tools.time_tool import time_tool
+
+calculate = calculator_tool.run
+current_time = time_tool.run
 from services import database_service
 from services import rag_service
 from services.auth_service import hash_password, verify_password
@@ -76,3 +79,25 @@ def test_password_hashing_supports_long_passphrases():
 def test_oversized_login_password_is_invalid():
     password_hash = hash_password("valid-password")
     assert verify_password("a" * 100, password_hash) is False
+
+def test_rag_preserves_retrieved_document_evidence_for_synthesis(monkeypatch):
+    monkeypatch.setattr(
+        rag_service,
+        "retrieve_documents",
+        lambda question, user_id, k=2: [{
+            "id": 0,
+            "filename": "employee_handbook.pdf",
+            "content": "Employees receive: 20 annual leave days.",
+        }],
+    )
+    monkeypatch.setattr(
+        rag_service,
+        "ask_llm",
+        lambda prompt: "Employees receive 20 annual leave days.",
+    )
+
+    result = rag_service.answer_question("How many annual leave days?", 1)
+
+    assert result["answer"] == "Employees receive 20 annual leave days."
+    assert result["sources"][0]["content"] == "Employees receive: 20 annual leave days."
+

@@ -28,6 +28,11 @@ def clean_expression(question: str) -> str:
 
     expression = re.sub(r"[^0-9+\-*/%().\s]", " ", expression)
 
+    # Keep decimal points inside numeric literals, but discard sentence
+    # punctuation at the end of natural-language prompts (for example,
+    # "What is 2 + 2? Reply with only the number.").
+    expression = re.sub(r"[.\s]+$", "", expression)
+
     return " ".join(expression.split())
 
 

@@ -48,7 +48,7 @@ Return JSON format:
         {{
             "id": "task_1",
             "description": "what this task should accomplish",
-            "tool": "rag/calculator/time",
+            "tool": "rag/calculator/time/web_search",
             "dependencies": [],
             "input_data": {{}}
         }}
@@ -72,7 +72,7 @@ If simple, return: {{"is_complex": false, "reasoning": "...", "tasks": [], "requ
                 task = Task(
                     id=task_data["id"],
                     description=task_data["description"],
-                    tool=task_data["tool"],
+                    tool=task_data["tool"] if task_data["tool"] in {"rag", "calculator", "time", "web_search"} else "rag",
                     dependencies=task_data.get("dependencies", []),
                     input_data=task_data.get("input_data", {})
                 )

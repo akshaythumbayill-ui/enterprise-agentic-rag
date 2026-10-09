@@ -45,10 +45,14 @@ class ToolChainingService:
         
         steps = []
         for task in plan.tasks:
+            # Planner tasks often leave input_data empty because every tool should
+            # receive the original user question unless it declares a specific input.
+            input_data = dict(task.input_data or {})
+            input_data.setdefault("question", question)
             step = ChainStep(
                 step_id=task.id,
                 tool=task.tool,
-                input_data=task.input_data,
+                input_data=input_data,
                 dependencies=task.dependencies,
                 status=ChainStatus.PENDING
             )
@@ -115,18 +119,53 @@ class ToolChainingService:
                 next_step.status = ChainStatus.COMPLETED
                 executed_steps += 1
                 
-            except Exception as e:
-                next_step.error_message = str(e)
-                next_step.status = ChainStatus.FAILED
-                
-                # Retry logic
+            except Exception as error:
+                next_step.error_message = str(error)
+
+                # Use the shared recovery policy rather than blindly repeating the
+                # same operation. The retry count remains bounded per step.
+                from .error_recovery_service import error_recovery_service
+
                 if next_step.retry_count < self.max_retries:
+                    error_context = error_recovery_service.analyze_error(
+                        error,
+                        next_step.tool,
+                        "tool_chain_step",
+                        {
+                            "retry_count": next_step.retry_count,
+                            "step_id": next_step.step_id,
+                            "question": next_step.input_data.get("question", ""),
+                        },
+                    )
+                    recovery_action = error_recovery_service.determine_recovery_strategy(
+                        error_context
+                    )
                     next_step.retry_count += 1
-                    next_step.status = ChainStatus.PENDING
-                    continue
-                else:
-                    # Max retries reached, mark as failed
-                    pass
+
+                    try:
+                        result = error_recovery_service.execute_recovery(
+                            lambda: self._execute_step(
+                                next_step,
+                                user_id,
+                                conversation_history,
+                                chain,
+                            ),
+                            recovery_action,
+                            error_context,
+                        )
+                        next_step.output_data = result
+                        next_step.status = ChainStatus.COMPLETED
+                        executed_steps += 1
+                        continue
+                    except Exception as recovery_error:
+                        next_step.error_message = str(recovery_error)
+
+                    if next_step.retry_count < self.max_retries:
+                        next_step.status = ChainStatus.PENDING
+                        continue
+
+                # Max retries reached, mark as failed.
+                next_step.status = ChainStatus.FAILED
         
         # Determine final chain status
         if all(step.status in [ChainStatus.COMPLETED, ChainStatus.SKIPPED] for step in chain.steps):
@@ -168,7 +207,7 @@ class ToolChainingService:
         """
         Execute a single step in the chain.
         """
-        from tools import calculator_tool, rag_tool, time_tool
+        from tools import calculator_tool, rag_tool, time_tool, web_search_tool
         
         # Prepare input data, potentially using outputs from previous steps
         input_data = self._prepare_step_input(step, chain)
@@ -183,6 +222,10 @@ class ToolChainingService:
         
         elif step.tool == "time":
             return time_tool.run()
+
+        elif step.tool == "web_search":
+            question = input_data.get("question", "")
+            return web_search_tool.run(question)
         
         else:
             raise ValueError(f"Unknown tool: {step.tool}")
@@ -226,12 +269,20 @@ class ToolChainingService:
                 "status": "completed"
             }
         
-        # Multiple steps - return all results for synthesis
+        # Multiple steps - return all results and aggregate their citations for synthesis.
+        step_results = [step.output_data for step in completed_steps]
+        sources = []
+        for result in step_results:
+            for source in (result or {}).get("sources", []):
+                if source not in sources:
+                    sources.append(source)
+
         return {
             "answer": "Multi-step execution completed. Results ready for synthesis.",
             "status": "completed",
             "steps_executed": len(completed_steps),
-            "step_results": [step.output_data for step in completed_steps],
+            "step_results": step_results,
+            "sources": sources,
             "chain_id": chain.chain_id
         }
 
