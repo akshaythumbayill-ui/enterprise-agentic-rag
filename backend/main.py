@@ -16,7 +16,7 @@ from fastapi.responses import JSONResponse
 from starlette.middleware.base import BaseHTTPMiddleware
 from pydantic import BaseModel, Field
 
-from services.agent_service import route_question
+from backend.services.agent_service import route_question
 from services.agentic_agent_service import route_question_agentic
 from services.auth_service import (
     create_access_token,
