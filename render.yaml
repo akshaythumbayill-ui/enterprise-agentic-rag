@@ -16,10 +16,7 @@ services:
       - key: MAX_UPLOAD_BYTES
         value: "10485760"
       - key: CORS_ALLOWED_ORIGINS
-        fromService:
-          type: web
-          name: enterprise-agent-frontend
-          property: url
+        value: https://enterprise-agent-frontend.onrender.com
 
   - type: web
     name: enterprise-agent-frontend
@@ -29,7 +26,4 @@ services:
     dockerfilePath: ./frontend/Dockerfile
     envVars:
       - key: BACKEND_URL
-        fromService:
-          type: web
-          name: enterprise-agent-backend
-          property: url
+        value: https://enterprise-agent-backend.onrender.com
