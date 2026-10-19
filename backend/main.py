@@ -16,18 +16,18 @@ from fastapi.responses import JSONResponse
 from starlette.middleware.base import BaseHTTPMiddleware
 from pydantic import BaseModel, Field
 
-from services.agent_service import route_question
-from services.agentic_agent_service import route_question_agentic
-from services.auth_service import (
+from backend.services.agent_service import route_question
+from backend.services.agentic_agent_service import route_question_agentic
+from backend.services.auth_service import (
     create_access_token,
     get_current_user,
     hash_password,
     verify_password,
 )
-from services.validation_service import validation_service
-from services.secrets_service import secrets_manager
-from services.csrf_service import csrf_protection
-from services.database_service import (
+from backend.services.validation_service import validation_service
+from backend.services.secrets_service import secrets_manager
+from backend.services.csrf_service import csrf_protection
+from backend.services.database_service import (
     create_user,
     delete_conversation,
     get_history,
@@ -36,13 +36,13 @@ from services.database_service import (
     init_database,
     save_turn,
 )
-from services.document_service import (
+from backend.services.document_service import (
     build_index_from_uploaded_pdfs,
     delete_uploaded_pdf,
     get_user_upload_dir,
     list_uploaded_pdfs,
 )
-from services.llm import test_api_key
+from backend.services.llm import test_api_key
 
 load_dotenv()
 
