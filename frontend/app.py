@@ -187,74 +187,195 @@ p {
     color: var(--text-muted);
 }
 
-/* Login Page Styling */
-.login-container {
-    max-width: 480px;
-    margin: 4rem auto;
-    padding: 2rem;
+/* ── Auth Page ────────────────────────────────────────────── */
+.auth-page-wrap {
+    position: fixed; inset: 0; z-index: 9999;
+    display: flex; align-items: center; justify-content: center;
+    background: #060913;
+    overflow: hidden;
+    font-family: 'Inter', sans-serif;
 }
 
-.login-header {
-    text-align: center;
-    margin-bottom: 2rem;
+/* animated blobs */
+.auth-blob {
+    position: absolute; border-radius: 50%; filter: blur(80px); opacity: .55;
+    animation: blobDrift 14s ease-in-out infinite alternate;
+}
+.auth-blob-1 { width:520px;height:520px; background:radial-gradient(circle,#6366f1,#4f46e5); top:-160px;left:-120px; animation-delay:0s; }
+.auth-blob-2 { width:400px;height:400px; background:radial-gradient(circle,#0ea5e9,#06b6d4); bottom:-100px;right:-80px; animation-delay:-5s; }
+.auth-blob-3 { width:300px;height:300px; background:radial-gradient(circle,#f472b6,#e11d48); top:30%;right:10%; opacity:.35; animation-delay:-9s; }
+@keyframes blobDrift {
+    0%   { transform: translate(0,0) scale(1); }
+    50%  { transform: translate(30px,-40px) scale(1.08); }
+    100% { transform: translate(-20px,30px) scale(.94); }
 }
 
-.login-logo {
-    font-size: 3rem;
-    margin-bottom: 1rem;
+/* grid overlay */
+.auth-grid {
+    position: absolute; inset: 0;
+    background-image: linear-gradient(rgba(99,102,241,.07) 1px,transparent 1px),
+                      linear-gradient(90deg,rgba(99,102,241,.07) 1px,transparent 1px);
+    background-size: 44px 44px;
+    mask-image: radial-gradient(ellipse 80% 70% at 50% 50%, black 40%, transparent 100%);
 }
 
-.login-title {
-    font-family: 'Playfair Display', Georgia, serif;
+/* glass card */
+.auth-glass {
+    position: relative; z-index: 2;
+    width: 480px; max-width: calc(100vw - 2rem);
+    padding: 2.5rem 2.75rem 2.75rem;
+    border-radius: 1.75rem;
+    background: rgba(15,20,40,.72);
+    backdrop-filter: blur(24px) saturate(180%);
+    -webkit-backdrop-filter: blur(24px) saturate(180%);
+    border: 1px solid rgba(255,255,255,.1);
+    box-shadow: 0 0 0 1px rgba(99,102,241,.15),
+                0 32px 80px rgba(0,0,0,.5),
+                inset 0 1px 0 rgba(255,255,255,.07);
+    animation: cardIn .55s cubic-bezier(.22,1,.36,1) both;
+}
+@keyframes cardIn {
+    from { opacity:0; transform: translateY(28px) scale(.97); }
+    to   { opacity:1; transform: none; }
+}
+
+/* logo mark */
+.auth-logo-ring {
+    display: flex; align-items: center; justify-content: center;
+    width: 64px; height: 64px; border-radius: 20px; margin: 0 auto 1.25rem;
+    background: linear-gradient(135deg,#6366f1 0%,#0ea5e9 100%);
+    box-shadow: 0 0 0 8px rgba(99,102,241,.15), 0 16px 32px rgba(99,102,241,.35);
     font-size: 2rem;
-    font-weight: 700;
-    color: var(--text-primary);
-    margin-bottom: 0.5rem;
+    animation: logoPulse 3s ease-in-out infinite;
+}
+@keyframes logoPulse {
+    0%,100% { box-shadow: 0 0 0 8px rgba(99,102,241,.15), 0 16px 32px rgba(99,102,241,.35); }
+    50%      { box-shadow: 0 0 0 14px rgba(99,102,241,.08), 0 16px 32px rgba(99,102,241,.5); }
 }
 
-.login-subtitle {
-    color: var(--text-secondary);
-    font-size: 1rem;
-}
-
-.login-card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-xl);
-    padding: 2rem;
-    box-shadow: var(--shadow-lg);
-}
-
-.auth-tabs {
-    display: flex;
-    gap: 0.5rem;
-    margin-bottom: 2rem;
-    background: var(--background);
-    padding: 0.25rem;
-    border-radius: var(--radius-md);
-}
-
-.auth-tab {
-    flex: 1;
-    padding: 0.75rem;
+.auth-title {
     text-align: center;
-    border-radius: var(--radius-sm);
-    font-weight: 500;
-    color: var(--text-secondary);
-    cursor: pointer;
-    transition: all 0.2s ease;
-    border: none;
-    background: transparent;
+    font-size: 2rem !important; font-weight: 800 !important;
+    letter-spacing: -.04em;
+    background: linear-gradient(135deg,#fff 30%,#a5b4fc);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    margin-bottom: .25rem !important;
+}
+.auth-sub {
+    text-align: center; color: #94a3b8;
+    font-size: .95rem; margin-bottom: 2rem;
 }
 
-.auth-tab.active {
-    background: var(--surface);
-    color: var(--primary);
-    box-shadow: var(--shadow-sm);
+/* tab switcher */
+.auth-tab-bar {
+    display: flex; gap: 6px;
+    background: rgba(255,255,255,.06);
+    border: 1px solid rgba(255,255,255,.1);
+    border-radius: 999px; padding: 5px;
+    margin-bottom: 2rem;
+}
+.auth-tab-btn {
+    flex: 1; padding: .55rem 1rem;
+    border: none; border-radius: 999px;
+    font-size: .9rem; font-weight: 600;
+    cursor: pointer; transition: all .25s ease;
+    background: transparent; color: #64748b;
+}
+.auth-tab-btn.cf-active {
+    background: linear-gradient(135deg,#6366f1,#0ea5e9);
+    color: #fff;
+    box-shadow: 0 6px 20px rgba(99,102,241,.4);
 }
 
-.auth-tab:hover:not(.active) {
-    background: var(--surface-hover);
+/* input fields */
+.cf-field { margin-bottom: 1.25rem; }
+.cf-label {
+    display: block; font-size: .82rem; font-weight: 600;
+    color: #94a3b8; letter-spacing: .06em; text-transform: uppercase;
+    margin-bottom: .5rem;
+}
+.cf-input-wrap { position: relative; }
+.cf-input-icon {
+    position: absolute; left: 1rem; top: 50%; transform: translateY(-50%);
+    font-size: 1.1rem; pointer-events: none;
+}
+.cf-input {
+    width: 100%; padding: .82rem 1rem .82rem 2.75rem;
+    border-radius: .9rem;
+    border: 1.5px solid rgba(255,255,255,.1);
+    background: rgba(255,255,255,.05);
+    color: #f1f5f9; font-size: .97rem;
+    outline: none; transition: all .2s ease;
+    font-family: 'Inter', sans-serif;
+}
+.cf-input::placeholder { color: #475569; }
+.cf-input:focus {
+    border-color: #6366f1;
+    background: rgba(99,102,241,.1);
+    box-shadow: 0 0 0 4px rgba(99,102,241,.2);
+}
+
+/* password strength */
+.cf-strength-bar {
+    display: flex; gap: 4px; margin-top: .5rem; height: 4px;
+}
+.cf-seg {
+    flex: 1; border-radius: 99px; background: rgba(255,255,255,.1);
+    transition: background .3s ease;
+}
+.cf-strength-label { font-size: .74rem; color: #64748b; margin-top: .35rem; }
+
+/* primary button */
+.cf-btn {
+    width: 100%; padding: .9rem 1.5rem; margin-top: .5rem;
+    border: none; border-radius: .9rem; cursor: pointer;
+    font-size: 1rem; font-weight: 700; color: #fff;
+    background: linear-gradient(135deg,#6366f1 0%,#0ea5e9 100%);
+    box-shadow: 0 10px 30px rgba(99,102,241,.35);
+    transition: all .22s ease;
+    position: relative; overflow: hidden;
+    font-family: 'Inter', sans-serif;
+}
+.cf-btn:hover { transform: translateY(-2px); box-shadow: 0 16px 40px rgba(99,102,241,.5); }
+.cf-btn:active { transform: translateY(0); }
+.cf-btn::after {
+    content: ''; position: absolute; inset: 0;
+    background: linear-gradient(135deg,rgba(255,255,255,.18),transparent);
+    border-radius: inherit;
+}
+
+/* divider */
+.cf-divider {
+    display: flex; align-items: center; gap: .75rem;
+    color: #334155; font-size: .8rem; margin: 1.25rem 0;
+}
+.cf-divider::before,.cf-divider::after {
+    content:''; flex:1; height:1px; background:rgba(255,255,255,.08);
+}
+
+/* panels */
+.cf-panel { animation: panelIn .3s ease both; }
+@keyframes panelIn {
+    from { opacity:0; transform: translateX(14px); }
+    to   { opacity:1; transform: none; }
+}
+
+/* feature pills */
+.cf-pills {
+    display: flex; flex-wrap: wrap; gap: .5rem;
+    margin-top: 1.75rem; justify-content: center;
+}
+.cf-pill {
+    display: inline-flex; align-items: center; gap: .4rem;
+    padding: .38rem .85rem;
+    border: 1px solid rgba(99,102,241,.3);
+    border-radius: 999px; background: rgba(99,102,241,.08);
+    color: #a5b4fc; font-size: .78rem; font-weight: 500;
+}
+
+/* canvas particles */
+#auth-canvas {
+    position: absolute; inset: 0; z-index: 1; pointer-events: none;
 }
 
 /* Form Styling */
@@ -695,47 +816,287 @@ def render_sources(sources):
 
 # Login Page
 if not st.session_state.token:
+    # ── Inject full-page auth shell (HTML/CSS/JS) ─────────────────────────
     st.markdown("""
-    <div class="login-container">
-        <div class="login-header">
-            <div class="login-logo">🧠</div>
-            <h1 class="login-title">CogniFlow</h1>
-            <p class="login-subtitle">Enterprise AI Knowledge Assistant</p>
+    <div class="auth-page-wrap" id="auth-root">
+        <!-- animated blobs -->
+        <div class="auth-blob auth-blob-1"></div>
+        <div class="auth-blob auth-blob-2"></div>
+        <div class="auth-blob auth-blob-3"></div>
+        <!-- grid + particles -->
+        <div class="auth-grid"></div>
+        <canvas id="auth-canvas"></canvas>
+        <!-- glass card -->
+        <div class="auth-glass">
+            <div class="auth-logo-ring">🧠</div>
+            <h1 class="auth-title">CogniFlow</h1>
+            <p class="auth-sub">Enterprise AI Knowledge Assistant</p>
+            <!-- tab bar -->
+            <div class="auth-tab-bar">
+                <button class="auth-tab-btn cf-active" id="tab-login-btn" onclick="cfSwitchTab('login')">Sign In</button>
+                <button class="auth-tab-btn" id="tab-register-btn" onclick="cfSwitchTab('register')">Create Account</button>
+            </div>
+            <!-- Login Panel -->
+            <div id="cf-login-panel" class="cf-panel">
+                <div class="cf-field">
+                    <label class="cf-label">Username</label>
+                    <div class="cf-input-wrap">
+                        <span class="cf-input-icon">👤</span>
+                        <input id="cf-login-user" class="cf-input" type="text" placeholder="Enter your username" autocomplete="username" />
+                    </div>
+                </div>
+                <div class="cf-field">
+                    <label class="cf-label">Password</label>
+                    <div class="cf-input-wrap">
+                        <span class="cf-input-icon">🔑</span>
+                        <input id="cf-login-pass" class="cf-input" type="password" placeholder="Enter your password" autocomplete="current-password" />
+                    </div>
+                </div>
+                <button class="cf-btn" onclick="cfDoLogin()">Sign In →</button>
+                <div class="cf-pills">
+                    <span class="cf-pill">⚡ Instant answers</span>
+                    <span class="cf-pill">🔒 JWT secured</span>
+                    <span class="cf-pill">🤖 Agentic AI</span>
+                </div>
+            </div>
+            <!-- Register Panel -->
+            <div id="cf-register-panel" class="cf-panel" style="display:none">
+                <div class="cf-field">
+                    <label class="cf-label">Username</label>
+                    <div class="cf-input-wrap">
+                        <span class="cf-input-icon">👤</span>
+                        <input id="cf-reg-user" class="cf-input" type="text" placeholder="Choose a username (min 3 chars)" autocomplete="username" />
+                    </div>
+                </div>
+                <div class="cf-field">
+                    <label class="cf-label">Password</label>
+                    <div class="cf-input-wrap">
+                        <span class="cf-input-icon">🔑</span>
+                        <input id="cf-reg-pass" class="cf-input" type="password" placeholder="Create a strong password" autocomplete="new-password" oninput="cfStrength(this.value)" />
+                    </div>
+                    <div class="cf-strength-bar">
+                        <div class="cf-seg" id="seg0"></div>
+                        <div class="cf-seg" id="seg1"></div>
+                        <div class="cf-seg" id="seg2"></div>
+                        <div class="cf-seg" id="seg3"></div>
+                    </div>
+                    <div class="cf-strength-label" id="cf-strength-lbl">Enter a password</div>
+                </div>
+                <button class="cf-btn" onclick="cfDoRegister()">Create Account →</button>
+                <div class="cf-pills">
+                    <span class="cf-pill">📄 PDF indexing</span>
+                    <span class="cf-pill">🌐 Web search</span>
+                    <span class="cf-pill">💬 Memory</span>
+                </div>
+            </div>
+            <!-- status -->
+            <div id="cf-status" style="margin-top:1rem;font-size:.88rem;text-align:center;min-height:1.4em"></div>
         </div>
     </div>
+
+    <script>
+    (function(){
+        /* ── Particle canvas ── */
+        const canvas = document.getElementById('auth-canvas');
+        const ctx    = canvas ? canvas.getContext('2d') : null;
+        let W, H, particles = [];
+        function resize(){
+            if(!canvas) return;
+            W = canvas.width  = window.innerWidth;
+            H = canvas.height = window.innerHeight;
+        }
+        function mkPart(){
+            return {
+                x: Math.random()*W, y: Math.random()*H,
+                r: Math.random()*1.8+.4,
+                vx: (Math.random()-.5)*.35,
+                vy: (Math.random()-.5)*.35,
+                a: Math.random()*.5+.2
+            };
+        }
+        function initParticles(){
+            particles = Array.from({length:90}, mkPart);
+        }
+        function drawParticles(){
+            if(!ctx) return;
+            ctx.clearRect(0,0,W,H);
+            particles.forEach(p=>{
+                p.x += p.vx; p.y += p.vy;
+                if(p.x<0)p.x=W; if(p.x>W)p.x=0;
+                if(p.y<0)p.y=H; if(p.y>H)p.y=0;
+                ctx.beginPath();
+                ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
+                ctx.fillStyle = `rgba(139,92,246,${p.a})`;
+                ctx.fill();
+            });
+            requestAnimationFrame(drawParticles);
+        }
+        window.addEventListener('resize', ()=>{ resize(); initParticles(); });
+        resize(); initParticles(); drawParticles();
+
+        /* ── Tab switch ── */
+        window.cfSwitchTab = function(tab){
+            const loginPanel    = document.getElementById('cf-login-panel');
+            const registerPanel = document.getElementById('cf-register-panel');
+            const btnL = document.getElementById('tab-login-btn');
+            const btnR = document.getElementById('tab-register-btn');
+            clearStatus();
+            if(tab==='login'){
+                loginPanel.style.display=''; registerPanel.style.display='none';
+                btnL.classList.add('cf-active'); btnR.classList.remove('cf-active');
+                loginPanel.classList.remove('cf-panel'); void loginPanel.offsetWidth;
+                loginPanel.classList.add('cf-panel');
+            } else {
+                loginPanel.style.display='none'; registerPanel.style.display='';
+                btnR.classList.add('cf-active'); btnL.classList.remove('cf-active');
+                registerPanel.classList.remove('cf-panel'); void registerPanel.offsetWidth;
+                registerPanel.classList.add('cf-panel');
+            }
+        };
+
+        /* ── Status ── */
+        function setStatus(msg, isErr){
+            const el = document.getElementById('cf-status');
+            if(!el) return;
+            el.style.color = isErr ? '#f87171' : '#34d399';
+            el.textContent = msg;
+        }
+        function clearStatus(){
+            const el = document.getElementById('cf-status');
+            if(el) el.textContent='';
+        }
+
+        /* ── Password strength ── */
+        const COLORS = ['#ef4444','#f97316','#eab308','#22c55e'];
+        const LABELS = ['Too short','Weak — add symbols','Fair — add numbers','Strong ✓'];
+        window.cfStrength = function(v){
+            let score = 0;
+            if(v.length>=8) score++;
+            if(/[A-Z]/.test(v)&&/[a-z]/.test(v)) score++;
+            if(/[0-9]/.test(v)) score++;
+            if(/[^A-Za-z0-9]/.test(v)) score++;
+            for(let i=0;i<4;i++){
+                const seg = document.getElementById('seg'+i);
+                if(seg) seg.style.background = i<score ? COLORS[score-1] : 'rgba(255,255,255,.1)';
+            }
+            const lbl = document.getElementById('cf-strength-lbl');
+            if(lbl){ lbl.textContent = v.length>0 ? LABELS[Math.min(score,3)] : 'Enter a password'; lbl.style.color = score>0?COLORS[score-1]:'#64748b'; }
+        };
+
+        /* ── Button loading ── */
+        function setBtnLoading(btn, loading){
+            if(!btn) return;
+            btn.disabled = loading;
+            btn.style.opacity = loading ? '.7' : '1';
+            btn.textContent = loading ? 'Please wait...' : btn._label;
+        }
+
+        /* ── Login ── */
+        window.cfDoLogin = async function(){
+            const u = document.getElementById('cf-login-user').value.trim();
+            const p = document.getElementById('cf-login-pass').value;
+            if(!u||!p){ setStatus('Please fill in all fields.', true); return; }
+            const btn = document.querySelector('#cf-login-panel .cf-btn');
+            if(btn) btn._label = btn.textContent;
+            setBtnLoading(btn, true);
+            clearStatus();
+            try {
+                const res = await fetch('/api/auth/login', {
+                    method:'POST', headers:{'Content-Type':'application/json'},
+                    body: JSON.stringify({username:u, password:p})
+                });
+                const data = await res.json();
+                if(res.ok && data.access_token){
+                    // write into Streamlit hidden field + trigger form submit
+                    setStatus('✓ Signed in! Loading your workspace…', false);
+                    document.getElementById('cf-token-store').value = data.access_token;
+                    document.getElementById('cf-login-trigger').click();
+                } else {
+                    const msg = typeof data.detail==='string' ? data.detail : 'Invalid credentials.';
+                    setStatus(msg, true);
+                }
+            } catch(e){ setStatus('Backend unavailable.', true); }
+            finally { setBtnLoading(btn, false); }
+        };
+
+        /* ── Register ── */
+        window.cfDoRegister = async function(){
+            const u = document.getElementById('cf-reg-user').value.trim();
+            const p = document.getElementById('cf-reg-pass').value;
+            if(!u||!p){ setStatus('Please fill in all fields.', true); return; }
+            const btn = document.querySelector('#cf-register-panel .cf-btn');
+            if(btn) btn._label = btn.textContent;
+            setBtnLoading(btn, true);
+            clearStatus();
+            try {
+                const res = await fetch('/api/auth/register', {
+                    method:'POST', headers:{'Content-Type':'application/json'},
+                    body: JSON.stringify({username:u, password:p})
+                });
+                const data = await res.json();
+                if(res.ok){
+                    setStatus('✓ Account created! Signing you in…', false);
+                    // auto-login
+                    const lr = await fetch('/api/auth/login', {
+                        method:'POST', headers:{'Content-Type':'application/json'},
+                        body: JSON.stringify({username:u, password:p})
+                    });
+                    const ld = await lr.json();
+                    if(lr.ok && ld.access_token){
+                        document.getElementById('cf-token-store').value = ld.access_token;
+                        document.getElementById('cf-login-trigger').click();
+                    }
+                } else {
+                    const msg = typeof data.detail==='string' ? data.detail :
+                        (Array.isArray(data.detail) ? data.detail.map(d=>d.msg||d).join(' ') : 'Registration failed.');
+                    setStatus(msg, true);
+                }
+            } catch(e){ setStatus('Backend unavailable.', true); }
+            finally { setBtnLoading(btn, false); }
+        };
+
+        /* enter key support */
+        ['cf-login-user','cf-login-pass'].forEach(id=>{
+            const el = document.getElementById(id);
+            if(el) el.addEventListener('keydown', e=>{ if(e.key==='Enter') window.cfDoLogin(); });
+        });
+        ['cf-reg-user','cf-reg-pass'].forEach(id=>{
+            const el = document.getElementById(id);
+            if(el) el.addEventListener('keydown', e=>{ if(e.key==='Enter') window.cfDoRegister(); });
+        });
+    })();
+    </script>
     """, unsafe_allow_html=True)
-    
-    col1, col2, col3 = st.columns([1, 2, 1])
-    with col2:
-        # Auth Tabs
-        tab1, tab2 = st.tabs(["Sign In", "Create Account"])
-        
-        with tab1:
-            st.markdown('<h3 style="margin-bottom: 1.5rem;">Welcome Back</h3>', unsafe_allow_html=True)
-            with st.form("login"):
-                username = st.text_input("Username", placeholder="Enter your username")
-                password = st.text_input("Password", type="password", placeholder="Enter your password")
-                submitted = st.form_submit_button("Sign In", type="primary")
-                
-                if submitted:
-                    result = api_request("POST", "/api/auth/login", json={"username": username, "password": password})
-                    if result:
-                        st.session_state.token = result["access_token"]
-                        st.rerun()
-        
-        with tab2:
-            st.markdown('<h3 style="margin-bottom: 1.5rem;">Create Account</h3>', unsafe_allow_html=True)
-            st.markdown('<p class="text-muted">Join CogniFlow to access intelligent document analysis and AI-powered knowledge management.</p>', unsafe_allow_html=True)
-            with st.form("register"):
-                new_username = st.text_input("Username", placeholder="Choose a username")
-                new_password = st.text_input("Password", type="password", placeholder="Create a password")
-                submitted = st.form_submit_button("Create Account", type="primary")
-                
-                if submitted:
-                    result = api_request("POST", "/api/auth/register", json={"username": new_username, "password": new_password})
-                    if result:
-                        st.success("✓ Account created successfully! Please sign in.")
-        
+
+    # Hidden Streamlit form — captures the JWT from the JS fetch and triggers a rerun
+    with st.form("__cf_auth_bridge", clear_on_submit=True):
+        token_input = st.text_input("token", key="cf_token_store", label_visibility="collapsed")
+        trigger = st.form_submit_button("go", type="primary")
+        if trigger and token_input:
+            st.session_state.token = token_input
+            st.rerun()
+
+    # inject IDs so JS can find the hidden inputs
+    st.markdown("""
+    <script>
+    (function waitForInputs(){
+        const inp = document.querySelector('input[data-testid="stTextInput"]') ||
+                    document.querySelector('.stTextInput input');
+        const btn = document.querySelector('button[kind="primaryFormSubmit"]') ||
+                    document.querySelector('.stFormSubmitButton button');
+        if(inp && btn){
+            inp.id = 'cf-token-store';
+            btn.id = 'cf-login-trigger';
+            // hide the Streamlit form from view
+            const form = inp.closest('[data-testid="stForm"]') ||
+                         inp.closest('form') ||
+                         inp.parentElement?.parentElement?.parentElement;
+            if(form) form.style.cssText='position:absolute;left:-9999px;opacity:0;pointer-events:none;height:0;overflow:hidden';
+        } else { setTimeout(waitForInputs, 80); }
+    })();
+    </script>
+    """, unsafe_allow_html=True)
+
     st.stop()
 
 # Dashboard
