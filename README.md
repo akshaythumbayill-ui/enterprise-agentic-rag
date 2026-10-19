@@ -1,6 +1,6 @@
 # Enterprise Knowledge Base Assistant
 
-FastAPI and Streamlit assistant with Groq, SentenceTransformers, FAISS, PDF indexing, tool routing, JWT authentication, and SQLite conversation memory.
+FastAPI backend with both Streamlit and Next.js frontends. Features Groq, SentenceTransformers, FAISS, PDF indexing, tool routing, JWT authentication, and SQLite conversation memory.
 
 ## Local setup
 
@@ -37,6 +37,22 @@ streamlit run frontend/app.py --server.port 8501
 ```
 
 API docs: http://localhost:8000/docs. Health: `/health`; readiness: `/ready`.
+
+## Next.js Web Frontend
+
+A modern React-based frontend is available in the `web/` directory for deployment on Vercel or other platforms.
+
+### Local development:
+```powershell
+cd web
+npm install
+npm run dev
+```
+
+Access at http://localhost:3000
+
+### Deployment:
+See [VERCEL_DEPLOYMENT.md](VERCEL_DEPLOYMENT.md) for detailed Vercel deployment instructions.
 
 ## Docker
 
