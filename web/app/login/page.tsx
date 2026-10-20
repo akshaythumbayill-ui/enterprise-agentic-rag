@@ -38,52 +38,58 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
-      <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-8 max-w-md w-full mx-4 border border-white/20">
-        <h1 className="text-3xl font-bold text-white mb-6 text-center">
-          Sign In
-        </h1>
-        <form onSubmit={handleLogin} className="space-y-4">
+    <div className="min-h-screen gradient-bg flex items-center justify-center p-4">
+      <div className="glass-card p-8 max-w-md w-full">
+        <div className="text-center mb-8">
+          <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-purple-500 to-indigo-600 rounded-2xl mb-4 shadow-lg">
+            <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
+            </svg>
+          </div>
+          <h1 className="text-3xl font-bold text-white mb-2">Welcome Back</h1>
+          <p className="text-white/70">Sign in to access your knowledge base</p>
+        </div>
+        <form onSubmit={handleLogin} className="space-y-5">
           <div>
-            <label className="block text-white mb-2">Username</label>
+            <label className="block text-white/90 mb-2 font-medium">Username</label>
             <input
               type="text"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
-              className="w-full bg-white/20 border border-white/30 rounded-lg px-4 py-3 text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-purple-500"
+              className="input-field"
               placeholder="Enter your username"
               required
             />
           </div>
           <div>
-            <label className="block text-white mb-2">Password</label>
+            <label className="block text-white/90 mb-2 font-medium">Password</label>
             <input
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full bg-white/20 border border-white/30 rounded-lg px-4 py-3 text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-purple-500"
+              className="input-field"
               placeholder="Enter your password"
               required
             />
           </div>
           {error && (
-            <div className="bg-red-500/20 border border-red-500/50 text-red-200 px-4 py-2 rounded-lg">
+            <div className="bg-red-500/20 border border-red-500/50 text-red-200 px-4 py-3 rounded-xl">
               {error}
             </div>
           )}
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-purple-600 hover:bg-purple-700 disabled:bg-purple-800 text-white font-semibold py-3 px-4 rounded-lg transition-colors"
+            className="btn-primary w-full"
           >
             {loading ? "Signing in..." : "Sign In"}
           </button>
         </form>
-        <p className="text-center text-white/70 mt-4">
+        <p className="text-center text-white/70 mt-6">
           Don't have an account?{" "}
           <button
             onClick={() => router.push("/register")}
-            className="text-purple-400 hover:text-purple-300"
+            className="text-purple-400 hover:text-purple-300 font-medium transition-colors"
           >
             Create one
           </button>
