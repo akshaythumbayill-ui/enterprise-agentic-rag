@@ -6,6 +6,9 @@ export async function POST(request: NextRequest) {
     const formData = await request.formData();
     const backendUrl = process.env.BACKEND_URL || "http://localhost:8000";
 
+    console.log("Upload with backend URL:", backendUrl);
+    console.log("Auth header present:", !!authHeader);
+
     // Backend expects 'files' as the field name (list of files)
     const file = formData.get("file");
     if (!file) {
@@ -26,6 +29,8 @@ export async function POST(request: NextRequest) {
     });
 
     const data = await response.json();
+    console.log("Upload response status:", response.status);
+
     return NextResponse.json(data, { status: response.status });
   } catch (error) {
     console.error("Upload error:", error);

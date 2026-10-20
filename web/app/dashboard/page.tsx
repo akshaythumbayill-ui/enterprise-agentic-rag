@@ -19,6 +19,7 @@ export default function DashboardPage() {
 
   useEffect(() => {
     const storedToken = localStorage.getItem("token");
+    console.log("Stored token on load:", !!storedToken);
     if (!storedToken) {
       router.push("/login");
     } else {
