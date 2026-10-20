@@ -8,6 +8,7 @@ export async function POST(request: NextRequest) {
 
     console.log("Chat with backend URL:", backendUrl);
     console.log("Auth header present:", !!authHeader);
+    console.log("Agentic mode:", body.agentic);
 
     const response = await fetch(`${backendUrl}/api/chat`, {
       method: "POST",

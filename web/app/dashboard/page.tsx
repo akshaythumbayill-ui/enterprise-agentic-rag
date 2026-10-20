@@ -18,6 +18,7 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(false);
   const [documentFile, setDocumentFile] = useState<File | null>(null);
   const [uploadedDocs, setUploadedDocs] = useState<string[]>([]);
+  const [agenticMode, setAgenticMode] = useState(false);
 
   useEffect(() => {
     const storedToken = localStorage.getItem("token");
@@ -94,7 +95,7 @@ export default function DashboardPage() {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ question: input }),
+        body: JSON.stringify({ question: input, agentic: agenticMode }),
       });
 
       const data = await response.json();
@@ -220,13 +221,30 @@ export default function DashboardPage() {
 
           {/* Chat Section */}
           <div className="lg:col-span-2 glass-card p-6 flex flex-col">
-            <div className="flex items-center space-x-3 mb-6">
-              <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-pink-600 rounded-xl flex items-center justify-center">
-                <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
-                </svg>
+            <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center space-x-3">
+                <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-pink-600 rounded-xl flex items-center justify-center">
+                  <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
+                  </svg>
+                </div>
+                <h2 className="text-xl font-semibold text-white">AI Chat</h2>
               </div>
-              <h2 className="text-xl font-semibold text-white">AI Chat</h2>
+              <div className="flex items-center space-x-3">
+                <span className="text-white/70 text-sm">Agentic Mode</span>
+                <button
+                  onClick={() => setAgenticMode(!agenticMode)}
+                  className={`relative w-14 h-7 rounded-full transition-colors duration-200 ${
+                    agenticMode ? "bg-purple-600" : "bg-white/20"
+                  }`}
+                >
+                  <span
+                    className={`absolute top-1 left-1 w-5 h-5 bg-white rounded-full transition-transform duration-200 ${
+                      agenticMode ? "translate-x-7" : "translate-x-0"
+                    }`}
+                  />
+                </button>
+              </div>
             </div>
             <div className="flex-1 overflow-y-auto mb-4 space-y-4 pr-2 max-h-[500px]">
               {messages.length === 0 ? (
@@ -306,7 +324,7 @@ export default function DashboardPage() {
                 type="text"
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
-                placeholder="Ask a question about your documents..."
+                placeholder={agenticMode ? "Ask a complex question (agentic mode enabled)..." : "Ask a question about your documents..."}
                 className="flex-1 input-field"
                 disabled={loading}
               />
@@ -321,6 +339,16 @@ export default function DashboardPage() {
                 </svg>
               </button>
             </form>
+            {agenticMode && (
+              <div className="mt-3 text-center text-white/60 text-sm">
+                <span className="inline-flex items-center space-x-2">
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                  </svg>
+                  <span>Agentic mode: Multi-step reasoning with self-reflection</span>
+                </span>
+              </div>
+            )}
           </div>
         </div>
       </div>
