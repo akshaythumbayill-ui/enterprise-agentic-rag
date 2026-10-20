@@ -7,7 +7,5 @@ dependencies = [
     "fastapi",
     "uvicorn",
     "python-dotenv",
+    "vercel",
 ]
-
-[tool.vercel]
-entrypoint = "backend.main:app"
