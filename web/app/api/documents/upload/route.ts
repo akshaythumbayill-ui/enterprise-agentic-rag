@@ -6,6 +6,13 @@ export async function POST(request: NextRequest) {
     const formData = await request.formData();
     const backendUrl = process.env.BACKEND_URL || "http://localhost:8000";
 
+    // Backend expects 'files' as the field name, rename 'file' to 'files'
+    const file = formData.get("file");
+    if (file) {
+      formData.delete("file");
+      formData.append("files", file);
+    }
+
     const response = await fetch(`${backendUrl}/api/documents/upload`, {
       method: "POST",
       headers: { Authorization: authHeader || "" },

@@ -35,9 +35,11 @@ export default function DashboardPage() {
       if (response.ok) {
         const data = await response.json();
         setUploadedDocs(data.documents || []);
+      } else {
+        console.error("Failed to fetch documents:", response.status);
       }
     } catch (err) {
-      console.error("Failed to fetch documents");
+      console.error("Failed to fetch documents", err);
     }
   };
 
@@ -55,12 +57,18 @@ export default function DashboardPage() {
         body: formData,
       });
 
+      const data = await response.json();
+
       if (response.ok) {
         setDocumentFile(null);
         fetchDocuments(token);
+        alert("Document uploaded successfully!");
+      } else {
+        alert(`Upload failed: ${data.detail || "Unknown error"}`);
       }
     } catch (err) {
-      console.error("Upload failed");
+      console.error("Upload failed", err);
+      alert("Upload failed: Connection error");
     }
   };
 
@@ -84,15 +92,24 @@ export default function DashboardPage() {
       });
 
       const data = await response.json();
-      const assistantMessage: Message = {
-        role: "assistant",
-        content: data.answer || "No response received",
-      };
-      setMessages((prev) => [...prev, assistantMessage]);
+
+      if (response.ok) {
+        const assistantMessage: Message = {
+          role: "assistant",
+          content: data.answer || "No response received",
+        };
+        setMessages((prev) => [...prev, assistantMessage]);
+      } else {
+        const assistantMessage: Message = {
+          role: "assistant",
+          content: `Error: ${data.detail || "Failed to get response"}`,
+        };
+        setMessages((prev) => [...prev, assistantMessage]);
+      }
     } catch (err) {
       setMessages((prev) => [
         ...prev,
-        { role: "assistant", content: "Error: Failed to get response" },
+        { role: "assistant", content: "Error: Connection failed. Please check if the backend is running." },
       ]);
     } finally {
       setLoading(false);
