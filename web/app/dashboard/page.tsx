@@ -35,7 +35,10 @@ export default function DashboardPage() {
       });
       if (response.ok) {
         const data = await response.json();
-        setUploadedDocs(data.documents || []);
+        console.log("Documents data:", data);
+        // Extract filenames from document objects
+        const docs = (data.documents || []).map((doc: any) => doc.filename);
+        setUploadedDocs(docs);
       } else {
         console.error("Failed to fetch documents:", response.status);
       }
