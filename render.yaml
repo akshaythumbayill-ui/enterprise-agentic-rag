@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: enterprise-agent-backend
+    name: cogniflow-backend
     runtime: docker
     plan: free
     dockerContext: .

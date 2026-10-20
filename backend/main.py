@@ -61,7 +61,7 @@ request_buckets = defaultdict(deque)
 RATE_LIMITS = {"/api/auth/login": (5, 60), "/api/chat": (30, 60)}
 
 app = FastAPI(
-    title="Enterprise Knowledge Base Assistant",
+    title="Cogniflow",
     description="RAG assistant with tools, PDF upload, and SQLite memory",
     version="1.3.0",
 )

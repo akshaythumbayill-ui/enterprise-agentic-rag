@@ -25,7 +25,7 @@ export default function Home() {
             </svg>
           </div>
           <h1 className="text-4xl font-bold text-white mb-2">
-            Enterprise Knowledge Base
+            Cogniflow
           </h1>
           <p className="text-white/70">
             AI-powered document analysis and intelligent conversation

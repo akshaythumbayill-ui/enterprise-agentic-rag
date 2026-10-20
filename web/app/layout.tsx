@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Enterprise Knowledge Base",
+  title: "Cogniflow",
   description: "AI-powered document analysis and knowledge management",
 };
 

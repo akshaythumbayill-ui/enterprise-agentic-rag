@@ -1,4 +1,4 @@
-# Enterprise Knowledge Base Assistant
+# Cogniflow
 
 FastAPI backend with both Streamlit and Next.js frontends. Features Groq, SentenceTransformers, FAISS, PDF indexing, tool routing, JWT authentication, and SQLite conversation memory.
 
