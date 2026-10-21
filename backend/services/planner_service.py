@@ -34,7 +34,21 @@ def select_tool(
     web_search_markers = (
         "search the web",
         "search online",
+        "search from web",
+        "search on web",
+        "search from the web",
+        "search on the web",
+        "search the internet",
+        "search internet",
         "look up online",
+        "look up on web",
+        "look on web",
+        "lookup on web",
+        "find online",
+        "find on web",
+        "find from web",
+        "from web",
+        "from the web",
         "on the internet",
         "latest news",
         "current news",
@@ -47,6 +61,8 @@ def select_tool(
         "current status",
         "current population",
         "recently",
+        "google it",
+        "google this",
     )
     if any(marker in normalized_question for marker in web_search_markers) or (
         "current " in normalized_question and "current time" not in normalized_question
@@ -64,10 +80,8 @@ You select one tool for an enterprise assistant.
 Tools:
 - "time": current date, day, time, or timezone questions.
 - "calculator": arithmetic or mathematical calculations.
-- "web_search": current events, recent facts, online research, or questions
-  that explicitly require web sources.
-- "rag": company policies, employee documents, travel policies,
-  or any question not covered by the other tools.
+- "web_search": public figures, general world knowledge, external companies, current events, recent facts, online research, or questions asking to search the web or internet.
+- "rag": company-specific policies, employee documents, internal business documentation, or questions referencing uploaded documents/files.
 
 Conversation history:
 {conversation_history}

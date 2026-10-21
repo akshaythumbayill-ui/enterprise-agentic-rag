@@ -8,7 +8,10 @@ from .tool_chaining_service import tool_chaining_service, ToolChain
 from .reflection_service import reflection_service, ReflectionResult
 from .error_recovery_service import error_recovery_service, ErrorContext
 from .agentic_state_service import agentic_state_manager, AgentStatus
-from tools import calculator_tool, rag_tool, time_tool, web_search_tool
+try:
+    from backend.tools import calculator_tool, rag_tool, time_tool, web_search_tool
+except ModuleNotFoundError:
+    from tools import calculator_tool, rag_tool, time_tool, web_search_tool
 
 class AgenticAgentState(TypedDict, total=False):
     question: str
@@ -126,7 +129,10 @@ def simple_execution_node(state: AgenticAgentState):
         elif tool == "time":
             result = time_tool.run()
         elif tool == "web_search":
-            result = web_search_tool.run(question)
+            result = web_search_tool.run(
+                question,
+                conversation_history=conversation_history,
+            )
         else:
             result = {"answer": "Unknown tool selected", "tool": tool, "sources": []}
         

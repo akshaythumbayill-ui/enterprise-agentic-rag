@@ -103,3 +103,65 @@ def test_python_release_queries_use_official_sources_and_exact_version(monkeypat
             "score": None,
         }
     ]
+
+
+def test_tavily_failure_falls_back_to_duckduckgo(monkeypatch):
+    import requests
+    monkeypatch.setenv("TAVILY_API_KEY", "test-key")
+
+    class FailingSession:
+        def post(self, url, **kwargs):
+            raise requests.RequestException("432 Usage limit exceeded")
+
+    tool = web_search_module.WebSearchTool(FailingSession())
+
+    monkeypatch.setattr(
+        tool,
+        "_run_duckduckgo",
+        lambda question, query, count: {
+            "tool": "web_search",
+            "question": question,
+            "search_query": query,
+            "answer": "Answer from DuckDuckGo fallback.",
+            "sources": [{"title": "DDG Source", "url": "https://ddg.example.com", "content": "Info", "score": None}],
+            "grounded": True,
+        },
+    )
+
+    result = tool.run("who is sundhar pichai?")
+
+    assert result["tool"] == "web_search"
+    assert result["grounded"] is True
+    assert result["answer"] == "Answer from DuckDuckGo fallback."
+    assert result["sources"][0]["url"] == "https://ddg.example.com"
+
+
+def test_search_from_web_resolves_previous_user_question():
+    history = (
+        "User: who is sundhar pichai?\n"
+        "Assistant: No indexed documents are available. Upload a PDF to ask document questions."
+    )
+    resolved = web_search_module.WebSearchTool._normalise_query("search from web", conversation_history=history)
+    assert "sundhar pichai" in resolved.lower()
+
+
+def test_explicit_duckduckgo_provider(monkeypatch):
+    monkeypatch.setenv("WEB_SEARCH_PROVIDER", "duckduckgo")
+    tool = web_search_module.WebSearchTool()
+
+    monkeypatch.setattr(
+        tool,
+        "_run_duckduckgo",
+        lambda question, query, count: {
+            "tool": "web_search",
+            "question": question,
+            "search_query": query,
+            "answer": "Direct DuckDuckGo answer.",
+            "sources": [{"title": "DDG direct", "url": "https://ddg.example.com", "content": "Direct", "score": None}],
+            "grounded": True,
+        },
+    )
+
+    result = tool.run("latest AI breakthroughs")
+    assert result["grounded"] is True
+    assert result["answer"] == "Direct DuckDuckGo answer."

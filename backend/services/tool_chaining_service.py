@@ -207,7 +207,10 @@ class ToolChainingService:
         """
         Execute a single step in the chain.
         """
-        from tools import calculator_tool, rag_tool, time_tool, web_search_tool
+        try:
+            from backend.tools import calculator_tool, rag_tool, time_tool, web_search_tool
+        except ModuleNotFoundError:
+            from tools import calculator_tool, rag_tool, time_tool, web_search_tool
         
         # Prepare input data, potentially using outputs from previous steps
         input_data = self._prepare_step_input(step, chain)
@@ -225,7 +228,10 @@ class ToolChainingService:
 
         elif step.tool == "web_search":
             question = input_data.get("question", "")
-            return web_search_tool.run(question)
+            return web_search_tool.run(
+                question,
+                conversation_history=conversation_history,
+            )
         
         else:
             raise ValueError(f"Unknown tool: {step.tool}")

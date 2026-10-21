@@ -61,7 +61,10 @@ def calculator_node(state: AgentState):
 
 def web_search_node(state: AgentState):
     return {
-        "result": web_search_tool.run(state["question"])
+        "result": web_search_tool.run(
+            state["question"],
+            conversation_history=state.get("conversation_history", ""),
+        )
     }
 
 
