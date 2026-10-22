@@ -2,135 +2,118 @@
 @tailwind components;
 @tailwind utilities;
 
-@layer base {
-  :root {
-    --background: #F8FAFC;
-    --surface: #FFFFFF;
-    --text-primary: #0F172A;
-    --text-secondary: #64748B;
-    --primary: #2563EB;
-    --primary-hover: #1D4ED8;
-    --border: #E2E8F0;
-    --success: #15803D;
-    --warning: #D97706;
-    --error: #DC2626;
-  }
-
-  * {
-    @apply border-border;
-  }
-
-  body {
-    @apply bg-background text-text-primary antialiased;
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
-  }
+:root {
+  --background: #F8FAFC;
+  --surface: #FFFFFF;
+  --text-primary: #0F172A;
+  --text-secondary: #64748B;
+  --primary: #2563EB;
+  --primary-hover: #1D4ED8;
+  --border: #E2E8F0;
+  --success: #15803D;
+  --warning: #D97706;
+  --error: #DC2626;
 }
 
-@layer utilities {
-  .text-balance {
-    text-wrap: balance;
-  }
+body {
+  background-color: var(--background);
+  color: var(--text-primary);
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 @layer components {
-  /* Button Components */
   .btn {
-    @apply inline-flex items-center justify-center px-4 py-2 text-sm font-medium rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none;
+    @apply inline-flex items-center justify-center px-4 py-2 text-sm font-medium rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none;
   }
 
   .btn-primary {
-    @apply bg-primary text-white hover:bg-primary-hover;
+    @apply bg-blue-600 text-white hover:bg-blue-700;
   }
 
   .btn-secondary {
-    @apply bg-white text-text-primary border border-border hover:bg-gray-50;
+    @apply bg-white text-gray-900 border border-gray-300 hover:bg-gray-50;
   }
 
   .btn-ghost {
-    @apply text-text-secondary hover:text-text-primary hover:bg-gray-100;
+    @apply text-gray-600 hover:text-gray-900 hover:bg-gray-100;
   }
 
   .btn-danger {
-    @apply bg-error text-white hover:bg-red-700;
+    @apply bg-red-600 text-white hover:bg-red-700;
   }
 
-  /* Input Components */
   .input {
-    @apply w-full px-3 py-2 text-sm border border-border rounded-md bg-surface text-text-primary placeholder:text-text-secondary focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-colors;
+    @apply w-full px-3 py-2 text-sm border border-gray-300 rounded-md bg-white text-gray-900 placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent transition-colors;
   }
 
   .input-error {
-    @apply border-error focus:ring-error;
+    @apply border-red-600 focus:ring-red-600;
   }
 
-  /* Card Components */
   .card {
-    @apply bg-surface border border-border rounded-lg shadow-sm;
+    @apply bg-white border border-gray-200 rounded-lg shadow-sm;
   }
 
   .card-header {
-    @apply px-6 py-4 border-b border-border;
+    @apply px-6 py-4 border-b border-gray-200;
   }
 
   .card-body {
     @apply p-6;
   }
 
-  /* Text Components */
   .text-h1 {
-    @apply text-2xl font-semibold text-text-primary;
+    @apply text-2xl font-semibold text-gray-900;
   }
 
   .text-h2 {
-    @apply text-xl font-semibold text-text-primary;
+    @apply text-xl font-semibold text-gray-900;
   }
 
   .text-h3 {
-    @apply text-lg font-medium text-text-primary;
+    @apply text-lg font-medium text-gray-900;
   }
 
   .text-body {
-    @apply text-sm text-text-primary;
+    @apply text-sm text-gray-900;
   }
 
   .text-muted {
-    @apply text-sm text-text-secondary;
+    @apply text-sm text-gray-600;
   }
 
-  /* Layout Components */
   .container-app {
     @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
   }
 
-  /* Sidebar Components */
   .sidebar {
-    @apply w-64 bg-surface border-r border-border h-screen flex flex-col fixed left-0 top-0 z-30;
+    @apply w-64 bg-white border-r border-gray-200 h-screen flex flex-col fixed left-0 top-0 z-30;
   }
 
   .sidebar-item {
-    @apply flex items-center gap-3 px-4 py-2 text-sm text-text-secondary hover:text-text-primary hover:bg-gray-50 rounded-md transition-colors cursor-pointer;
+    @apply flex items-center gap-3 px-4 py-2 text-sm text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-md transition-colors cursor-pointer;
   }
 
   .sidebar-item-active {
-    @apply bg-blue-50 text-primary font-medium;
+    @apply bg-blue-50 text-blue-600 font-medium;
   }
 
-  /* Header Components */
   .header {
-    @apply h-16 bg-surface border-b border-border flex items-center justify-between px-6;
+    @apply h-16 bg-white border-b border-gray-200 flex items-center justify-between px-6;
   }
 
-  /* Table Components */
   .table {
     @apply w-full text-sm text-left;
   }
 
   .table th {
-    @apply px-6 py-3 font-medium text-text-secondary border-b border-border bg-gray-50;
+    @apply px-6 py-3 font-medium text-gray-600 border-b border-gray-200 bg-gray-50;
   }
 
   .table td {
-    @apply px-6 py-4 border-b border-border;
+    @apply px-6 py-4 border-b border-gray-200;
   }
 
   .table tr:hover {
