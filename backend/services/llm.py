@@ -10,7 +10,11 @@ logger = logging.getLogger("enterprise_agent")
 # CURRENT ACTIVE Groq models (updated 2025)
 # These are the models that should work with an active account
 AVAILABLE_MODELS = [
-    "openai/gpt-oss-20b",
+    "llama-3.3-70b-versatile",
+    "llama-3.1-70b-versatile",
+    "llama-3.3-8b-instant",
+    "gemma2-9b-it",
+    "mixtral-8x7b-32768",
 ]
 
 
@@ -48,16 +52,18 @@ def test_api_key():
         except Exception as e:
             logger.warning(f"Could not list models: {e}")
         
-        # Fallback: try the most commonly available model
-        try:
-            response = client.chat.completions.create(
-                model="openai/gpt-oss-20b",
-                messages=[{"role": "user", "content": "test"}],
-                max_tokens=10,
-            )
-            return {"status": "valid", "model_used": "openai/gpt-oss-20b"}
-        except Exception as e:
-            logger.warning(f"Model openai/gpt-oss-20b failed: {e}")
+        # Fallback: try versatile models
+        for model in AVAILABLE_MODELS:
+            try:
+                response = client.chat.completions.create(
+                    model=model,
+                    messages=[{"role": "user", "content": "test"}],
+                    max_tokens=10,
+                )
+                return {"status": "valid", "model_used": model}
+            except Exception as e:
+                logger.warning(f"Model {model} failed: {e}")
+                continue
         
         return {"status": "invalid", "error": "No available models found with this API key"}
         
@@ -65,11 +71,22 @@ def test_api_key():
         return {"status": "invalid", "error": str(e)}
 
 
-def ask_llm(prompt: str, temperature: float = 0.2) -> str:
+def ask_llm(prompt: str, temperature: float = 0.1, max_tokens: int = 2048) -> str:
+    """
+    Query the LLM with the given prompt.
+    
+    Args:
+        prompt: The prompt to send to the LLM
+        temperature: Sampling temperature (0.0-1.0). Lower for factual RAG, higher for creative.
+        max_tokens: Maximum tokens in the response
+    
+    Returns:
+        The LLM's response text
+    """
     client = get_client()
     
     # Get preferred model from .env, or use list
-    preferred_model = os.getenv("GROQ_MODEL", "")
+    preferred_model = os.getenv("GROQ_MODEL", "llama-3.3-70b-versatile")
     models_to_try = [preferred_model] + [m for m in AVAILABLE_MODELS if m != preferred_model] if preferred_model else AVAILABLE_MODELS
     
     last_error = None
@@ -79,16 +96,21 @@ def ask_llm(prompt: str, temperature: float = 0.2) -> str:
             continue
             
         try:
-            logger.info(f"Attempting to use model: {model}")
+            logger.info(f"Attempting to use model: {model} with temperature {temperature}")
             response = client.chat.completions.create(
                 model=model,
                 temperature=temperature,
+                max_tokens=max_tokens,
                 messages=[
                     {
                         "role": "system",
                         "content": (
                             "You are a professional enterprise knowledge-base assistant. "
-                            "Give concise, accurate answers."
+                            "Your role is to provide accurate, well-structured answers based on the provided document context. "
+                            "Be thorough but concise. "
+                            "When you find information in the documents, cite the specific details clearly. "
+                            "If information is not found in the documents, state that clearly rather than guessing. "
+                            "Organize your answers with clear headings and bullet points when appropriate."
                         ),
                     },
                     {

@@ -33,7 +33,7 @@ def load_knowledge_base(user_id: int):
 def retrieve_documents(
     question: str,
     user_id: int,
-    k: int = 10,
+    k: int = 15,
 ):
     """
     Enhanced retrieval with more documents and better filtering.
@@ -90,42 +90,60 @@ def answer_question(
             "sources": [],
         }
 
-    # Use top-5 most relevant documents (increased from 3)
-    top_documents = documents[:5]
+    # Use top-7 most relevant documents for better coverage
+    top_documents = documents[:7]
+    
+    # Filter out low-relevance documents (similarity < 0.3)
+    relevant_documents = [doc for doc in top_documents if doc['similarity'] >= 0.3]
+    
+    if not relevant_documents:
+        return {
+            "question": question,
+            "answer": "I searched through your documents but couldn't find any relevant information to answer your question. Try rephrasing your question or upload more relevant documents.",
+            "sources": [],
+        }
     
     # Include relevance scores in context for better LLM understanding
     context_parts = []
-    for i, doc in enumerate(top_documents, 1):
+    for i, doc in enumerate(relevant_documents, 1):
         context_parts.append(
-            f"Document {i} (relevance: {doc['similarity']:.3f}, file: {doc['filename']}):\n{doc['content']}"
+            f"Document {i} (relevance: {doc['similarity']:.2%}, file: {doc['filename']}):\n{doc['content']}"
         )
     
     context = "\n\n---\n\n".join(context_parts)
 
-    prompt = f"""
-You are a helpful assistant that answers questions based ONLY on the provided document context.
-The context contains document sections ordered by relevance (highest similarity first).
+    prompt = f"""You are an expert enterprise knowledge assistant. Your task is to answer questions accurately based ONLY on the provided document context.
 
-Instructions:
-1. Use the provided context to answer the question comprehensively
-2. If multiple documents are relevant, synthesize information from all of them
-3. If the answer is not clearly found in the documents, state "I could not find that information in your documents"
-4. Do not make up information not present in the context
-5. Be specific and reference the document filenames when possible
+CONTEXT INFORMATION:
+- The context below contains document sections ordered by relevance (highest similarity first)
+- Each document section includes its relevance score and source filename
+- Higher relevance scores indicate better matches to the question
 
-Conversation history:
-{conversation_history}
-
-Document context (ordered by relevance):
+DOCUMENT CONTEXT:
 {context}
 
-Question:
-{question}
+QUESTION: {question}
 
-Answer:
-"""
+INSTRUCTIONS:
+1. Answer the question using ONLY the provided document context
+2. If multiple documents contain relevant information, synthesize a comprehensive answer
+3. Be specific and reference which document/file the information came from
+4. If the answer is clearly stated in the documents, provide it directly
+5. If the information is mentioned but requires interpretation, explain your reasoning
+6. If the answer is NOT found in the documents, clearly state: "I could not find that specific information in your documents"
+7. Do not make up information or use outside knowledge
+8. Organize your answer with clear structure:
+   - Start with a direct answer
+   - Provide supporting details with document references
+   - Use bullet points for multiple items
+   - Use numbered lists for sequential information
 
-    answer = ask_llm(prompt)
+CONVERSATION HISTORY (for context):
+{conversation_history}
+
+ANSWER:"""
+
+    answer = ask_llm(prompt, temperature=0.1, max_tokens=2048)
 
     return {
         "question": question,
@@ -137,6 +155,6 @@ Answer:
                 "content": document["content"],
                 "similarity": document["similarity"],
             }
-            for document in top_documents
+            for document in relevant_documents
         ],
     }
