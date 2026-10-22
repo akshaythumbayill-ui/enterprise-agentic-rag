@@ -329,9 +329,15 @@ async def upload_documents(
     try:
         result = build_index_from_uploaded_pdfs(current_user["id"])
     except (ValueError, FileNotFoundError) as error:
+        logger.error(f"Index build failed: {error}")
         for filename in saved_files:
             (upload_dir / filename).unlink(missing_ok=True)
         raise HTTPException(status_code=400, detail=str(error)) from error
+    except Exception as error:
+        logger.exception("Unexpected error during index build")
+        for filename in saved_files:
+            (upload_dir / filename).unlink(missing_ok=True)
+        raise HTTPException(status_code=500, detail=f"Failed to index PDF: {str(error)}") from error
 
     return {
         "message": "Your PDF files were uploaded and indexed.",

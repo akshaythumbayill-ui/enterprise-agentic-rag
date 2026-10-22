@@ -41,34 +41,41 @@ def build_index(documents: list[dict], user_id: int):
         for document in normalized_documents
     ]
 
-    model = get_embedding_model()
-
-    embeddings = model.encode(
-        texts,
-        convert_to_numpy=True,
-        normalize_embeddings=True,
-        show_progress_bar=False,
-    )
-
-    embeddings = np.asarray(embeddings, dtype=np.float32)
-
-    index = faiss.IndexFlatIP(embeddings.shape[1])
-    index.add(embeddings)
-
-    faiss.write_index(index, str(paths["index_path"]))
-
-    with paths["mapping_path"].open("w", encoding="utf-8") as file:
-        json.dump(
-            normalized_documents,
-            file,
-            indent=2,
-            ensure_ascii=False,
+    try:
+        model = get_embedding_model()
+        print(f"Generating embeddings for {len(texts)} chunks...")
+        
+        embeddings = model.encode(
+            texts,
+            convert_to_numpy=True,
+            normalize_embeddings=True,
+            show_progress_bar=False,
         )
 
-    return {
-        "documents_indexed": len(normalized_documents),
-        "index_path": str(paths["index_path"]),
-    }
+        embeddings = np.asarray(embeddings, dtype=np.float32)
+        print(f"Embeddings shape: {embeddings.shape}")
+
+        index = faiss.IndexFlatIP(embeddings.shape[1])
+        index.add(embeddings)
+        print(f"Added {embeddings.shape[0]} vectors to FAISS index")
+
+        faiss.write_index(index, str(paths["index_path"]))
+
+        with paths["mapping_path"].open("w", encoding="utf-8") as file:
+            json.dump(
+                normalized_documents,
+                file,
+                indent=2,
+                ensure_ascii=False,
+            )
+
+        return {
+            "documents_indexed": len(normalized_documents),
+            "index_path": str(paths["index_path"]),
+        }
+    except Exception as e:
+        print(f"Error building index: {e}")
+        raise ValueError(f"Failed to build index: {str(e)}") from e
 
 def delete_knowledge_base(user_id: int):
     paths = get_knowledge_base_paths(user_id)

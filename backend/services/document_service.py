@@ -39,6 +39,7 @@ def extract_text_from_pdf(pdf_path: Path):
             print(f"First 200 chars: {text[:200]}")
             return text
         except Exception as error:
+            print(f"PyMuPDF extraction failed: {error}")
             raise ValueError(f"Could not read PDF {pdf_path.name} with PyMuPDF: {error}") from error
     else:
         try:
@@ -71,16 +72,20 @@ def build_index_from_uploaded_pdfs(user_id: int):
     documents = []
 
     for pdf_file in pdf_files:
-        text = extract_text_from_pdf(pdf_file)
-        print(f"Chunking text from {pdf_file.name} into {len(text)} characters")
+        try:
+            text = extract_text_from_pdf(pdf_file)
+            print(f"Chunking text from {pdf_file.name} into {len(text)} characters")
 
-        for chunk in chunk_text(text):
-            documents.append(
-                {
-                    "filename": pdf_file.name,
-                    "content": chunk,
-                }
-            )
+            for chunk in chunk_text(text):
+                documents.append(
+                    {
+                        "filename": pdf_file.name,
+                        "content": chunk,
+                    }
+                )
+        except Exception as e:
+            print(f"Error processing {pdf_file.name}: {e}")
+            raise ValueError(f"Failed to process {pdf_file.name}: {str(e)}") from e
     
     print(f"Total chunks created: {len(documents)}")
     return build_index(documents, user_id)
