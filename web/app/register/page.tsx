@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { UserPlus } from "lucide-react";
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -35,7 +36,7 @@ export default function RegisterPage() {
         const loginData = await loginResponse.json();
         if (loginResponse.ok) {
           localStorage.setItem("token", loginData.access_token);
-          router.push("/dashboard");
+          router.push("/assistant");
         }
       } else {
         setError(
@@ -52,58 +53,85 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="min-h-screen gradient-bg flex items-center justify-center p-4">
-      <div className="glass-card p-8 max-w-md w-full">
+    <div className="min-h-screen bg-background flex items-center justify-center p-4">
+      <div className="w-full max-w-md">
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-emerald-600 rounded-xl mb-4 shadow-lg shadow-emerald-950/50 ring-1 ring-emerald-300/40">
-            <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
-            </svg>
-          </div>
-          <h1 className="text-3xl font-bold text-white mb-2">Create Account</h1>
-          <p className="text-white/70">Join to start exploring your knowledge base</p>
+          <h1 className="text-2xl font-semibold text-text-primary mb-2">
+            Create your account
+          </h1>
+          <p className="text-muted">
+            Join Cogniflow to start building your knowledge base
+          </p>
         </div>
-        <form onSubmit={handleRegister} className="space-y-5">
-          <div>
-            <label className="block text-white/90 mb-2 font-medium">Username</label>
-            <input
-              type="text"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              className="input-field"
-              placeholder="Choose a username"
-              required
-            />
+
+        <div className="card">
+          <div className="card-body">
+            <form onSubmit={handleRegister} className="space-y-4">
+              <div>
+                <label
+                  htmlFor="username"
+                  className="block text-sm font-medium text-text-secondary mb-1"
+                >
+                  Username
+                </label>
+                <input
+                  id="username"
+                  type="text"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  className="input"
+                  placeholder="Choose a username"
+                  required
+                />
+              </div>
+
+              <div>
+                <label
+                  htmlFor="password"
+                  className="block text-sm font-medium text-text-secondary mb-1"
+                >
+                  Password
+                </label>
+                <input
+                  id="password"
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="input"
+                  placeholder="Create a password"
+                  required
+                />
+              </div>
+
+              {error && (
+                <div className="bg-error/10 border border-error text-error px-4 py-3 rounded-md text-sm">
+                  {error}
+                </div>
+              )}
+
+              <button
+                type="submit"
+                disabled={loading}
+                className="btn btn-primary w-full"
+              >
+                {loading ? (
+                  "Creating account..."
+                ) : (
+                  <>
+                    <UserPlus className="w-4 h-4 mr-2" />
+                    Create Account
+                  </>
+                )}
+              </button>
+            </form>
           </div>
-          <div>
-            <label className="block text-white/90 mb-2 font-medium">Password</label>
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="input-field"
-              placeholder="Create a password"
-              required
-            />
-          </div>
-          {error && (
-            <div className="bg-red-500/20 border border-red-500/50 text-red-200 px-4 py-3 rounded-xl">
-              {error}
-            </div>
-          )}
-          <button
-            type="submit"
-            disabled={loading}
-            className="btn-primary w-full"
-          >
-            {loading ? "Creating account..." : "Create Account"}
-          </button>
-        </form>
-        <p className="text-center text-white/70 mt-6">
+        </div>
+
+        <p className="text-center text-muted mt-6 text-sm">
           Already have an account?{" "}
           <button
             onClick={() => router.push("/login")}
-            className="text-emerald-300 hover:text-emerald-200 font-medium transition-colors focus:outline-none focus:underline"
+            className="text-primary hover:underline font-medium"
           >
             Sign in
           </button>

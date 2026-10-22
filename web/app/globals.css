@@ -2,23 +2,28 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --background: #07100d;
-  --foreground: #ecfdf3;
-}
+@layer base {
+  :root {
+    --background: #F8FAFC;
+    --surface: #FFFFFF;
+    --text-primary: #0F172A;
+    --text-secondary: #64748B;
+    --primary: #2563EB;
+    --primary-hover: #1D4ED8;
+    --border: #E2E8F0;
+    --success: #15803D;
+    --warning: #D97706;
+    --error: #DC2626;
+  }
 
-body {
-  color: var(--foreground);
-  background: var(--background);
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
+  * {
+    @apply border-border;
+  }
 
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
+  body {
+    @apply bg-background text-text-primary antialiased;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+  }
 }
 
 @layer utilities {
@@ -28,23 +33,107 @@ body {
 }
 
 @layer components {
-  .glass-card {
-    @apply bg-[#101b16]/95 border border-emerald-300/20 rounded-xl shadow-2xl shadow-black/30;
-  }
-
-  .gradient-bg {
-    @apply bg-[radial-gradient(circle_at_top_right,_rgba(22,101,52,0.22),_transparent_35%),linear-gradient(135deg,_#050806_0%,_#0b1711_50%,_#050806_100%)];
-  }
-
-  .input-field {
-    @apply w-full bg-black/35 border border-emerald-100/20 rounded-lg px-4 py-3 text-white placeholder-emerald-100/45 focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:border-emerald-400/60 transition-all duration-200;
+  /* Button Components */
+  .btn {
+    @apply inline-flex items-center justify-center px-4 py-2 text-sm font-medium rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none;
   }
 
   .btn-primary {
-    @apply bg-emerald-600 hover:bg-emerald-500 text-white font-semibold py-3 px-6 rounded-lg transition-all duration-200 shadow-lg shadow-emerald-950/40 hover:shadow-emerald-950/60 focus:outline-none focus:ring-2 focus:ring-emerald-300 focus:ring-offset-2 focus:ring-offset-[#07100d];
+    @apply bg-primary text-white hover:bg-primary-hover;
   }
 
   .btn-secondary {
-    @apply bg-white/5 hover:bg-emerald-400/10 text-white font-semibold py-3 px-6 rounded-lg transition-all duration-200 border border-emerald-100/20;
+    @apply bg-white text-text-primary border border-border hover:bg-gray-50;
+  }
+
+  .btn-ghost {
+    @apply text-text-secondary hover:text-text-primary hover:bg-gray-100;
+  }
+
+  .btn-danger {
+    @apply bg-error text-white hover:bg-red-700;
+  }
+
+  /* Input Components */
+  .input {
+    @apply w-full px-3 py-2 text-sm border border-border rounded-md bg-surface text-text-primary placeholder:text-text-secondary focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-colors;
+  }
+
+  .input-error {
+    @apply border-error focus:ring-error;
+  }
+
+  /* Card Components */
+  .card {
+    @apply bg-surface border border-border rounded-lg shadow-sm;
+  }
+
+  .card-header {
+    @apply px-6 py-4 border-b border-border;
+  }
+
+  .card-body {
+    @apply p-6;
+  }
+
+  /* Text Components */
+  .text-h1 {
+    @apply text-2xl font-semibold text-text-primary;
+  }
+
+  .text-h2 {
+    @apply text-xl font-semibold text-text-primary;
+  }
+
+  .text-h3 {
+    @apply text-lg font-medium text-text-primary;
+  }
+
+  .text-body {
+    @apply text-sm text-text-primary;
+  }
+
+  .text-muted {
+    @apply text-sm text-text-secondary;
+  }
+
+  /* Layout Components */
+  .container-app {
+    @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
+  }
+
+  /* Sidebar Components */
+  .sidebar {
+    @apply w-64 bg-surface border-r border-border h-screen flex flex-col fixed left-0 top-0 z-30;
+  }
+
+  .sidebar-item {
+    @apply flex items-center gap-3 px-4 py-2 text-sm text-text-secondary hover:text-text-primary hover:bg-gray-50 rounded-md transition-colors cursor-pointer;
+  }
+
+  .sidebar-item-active {
+    @apply bg-blue-50 text-primary font-medium;
+  }
+
+  /* Header Components */
+  .header {
+    @apply h-16 bg-surface border-b border-border flex items-center justify-between px-6;
+  }
+
+  /* Table Components */
+  .table {
+    @apply w-full text-sm text-left;
+  }
+
+  .table th {
+    @apply px-6 py-3 font-medium text-text-secondary border-b border-border bg-gray-50;
+  }
+
+  .table td {
+    @apply px-6 py-4 border-b border-border;
+  }
+
+  .table tr:hover {
+    @apply bg-gray-50;
   }
 }

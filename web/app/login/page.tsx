@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { LogIn } from "lucide-react";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -26,7 +27,7 @@ export default function LoginPage() {
 
       if (response.ok) {
         localStorage.setItem("token", data.access_token);
-        router.push("/dashboard");
+        router.push("/assistant");
       } else {
         setError(data.detail || "Login failed");
       }
@@ -38,58 +39,85 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen gradient-bg flex items-center justify-center p-4">
-      <div className="glass-card p-8 max-w-md w-full">
+    <div className="min-h-screen bg-background flex items-center justify-center p-4">
+      <div className="w-full max-w-md">
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-emerald-600 rounded-xl mb-4 shadow-lg shadow-emerald-950/50 ring-1 ring-emerald-300/40">
-            <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
-            </svg>
-          </div>
-          <h1 className="text-3xl font-bold text-white mb-2">Welcome Back</h1>
-          <p className="text-white/70">Sign in to access your knowledge base</p>
+          <h1 className="text-2xl font-semibold text-text-primary mb-2">
+            Sign in to Cogniflow
+          </h1>
+          <p className="text-muted">
+            Enter your credentials to access your knowledge base
+          </p>
         </div>
-        <form onSubmit={handleLogin} className="space-y-5">
-          <div>
-            <label className="block text-white/90 mb-2 font-medium">Username</label>
-            <input
-              type="text"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              className="input-field"
-              placeholder="Enter your username"
-              required
-            />
+
+        <div className="card">
+          <div className="card-body">
+            <form onSubmit={handleLogin} className="space-y-4">
+              <div>
+                <label
+                  htmlFor="username"
+                  className="block text-sm font-medium text-text-secondary mb-1"
+                >
+                  Username
+                </label>
+                <input
+                  id="username"
+                  type="text"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  className="input"
+                  placeholder="Enter your username"
+                  required
+                />
+              </div>
+
+              <div>
+                <label
+                  htmlFor="password"
+                  className="block text-sm font-medium text-text-secondary mb-1"
+                >
+                  Password
+                </label>
+                <input
+                  id="password"
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="input"
+                  placeholder="Enter your password"
+                  required
+                />
+              </div>
+
+              {error && (
+                <div className="bg-error/10 border border-error text-error px-4 py-3 rounded-md text-sm">
+                  {error}
+                </div>
+              )}
+
+              <button
+                type="submit"
+                disabled={loading}
+                className="btn btn-primary w-full"
+              >
+                {loading ? (
+                  "Signing in..."
+                ) : (
+                  <>
+                    <LogIn className="w-4 h-4 mr-2" />
+                    Sign In
+                  </>
+                )}
+              </button>
+            </form>
           </div>
-          <div>
-            <label className="block text-white/90 mb-2 font-medium">Password</label>
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="input-field"
-              placeholder="Enter your password"
-              required
-            />
-          </div>
-          {error && (
-            <div className="bg-red-500/20 border border-red-500/50 text-red-200 px-4 py-3 rounded-xl">
-              {error}
-            </div>
-          )}
-          <button
-            type="submit"
-            disabled={loading}
-            className="btn-primary w-full"
-          >
-            {loading ? "Signing in..." : "Sign In"}
-          </button>
-        </form>
-        <p className="text-center text-white/70 mt-6">
+        </div>
+
+        <p className="text-center text-muted mt-6 text-sm">
           Don't have an account?{" "}
           <button
             onClick={() => router.push("/register")}
-            className="text-emerald-300 hover:text-emerald-200 font-medium transition-colors focus:outline-none focus:underline"
+            className="text-primary hover:underline font-medium"
           >
             Create one
           </button>
