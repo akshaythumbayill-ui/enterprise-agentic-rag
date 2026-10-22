@@ -16,18 +16,18 @@ from fastapi.responses import JSONResponse
 from starlette.middleware.base import BaseHTTPMiddleware
 from pydantic import BaseModel, Field
 
-from backend.services.agent_service import route_question
-from backend.services.agentic_agent_service import route_question_agentic
-from backend.services.auth_service import (
+from services.agent_service import route_question
+from services.agentic_agent_service import route_question_agentic
+from services.auth_service import (
     create_access_token,
     get_current_user,
     hash_password,
     verify_password,
 )
-from backend.services.validation_service import validation_service
-from backend.services.secrets_service import secrets_manager
-from backend.services.csrf_service import csrf_protection
-from backend.services.database_service import (
+from services.validation_service import validation_service
+from services.secrets_service import secrets_manager
+from services.csrf_service import csrf_protection
+from services.database_service import (
     create_user,
     delete_conversation,
     get_history,
@@ -36,13 +36,13 @@ from backend.services.database_service import (
     init_database,
     save_turn,
 )
-from backend.services.document_service import (
+from services.document_service import (
     build_index_from_uploaded_pdfs,
     delete_uploaded_pdf,
     get_user_upload_dir,
     list_uploaded_pdfs,
 )
-from backend.services.llm import test_api_key
+from services.llm import test_api_key
 
 load_dotenv()
 
@@ -198,6 +198,67 @@ def test_groq_api():
                 "6. Try this test again",
             ],
         }
+
+
+@app.get("/api/debug/retrieval")
+def debug_retrieval(
+    question: str,
+    current_user: dict = Depends(get_current_user),
+):
+    """Debug endpoint to see what's being retrieved for a question."""
+    try:
+        from services.rag_service import retrieve_documents
+        from services.document_service import list_uploaded_pdfs
+        
+        # Get list of uploaded PDFs
+        pdfs = list_uploaded_pdfs(current_user["id"])
+        
+        # Retrieve documents for the question
+        docs = retrieve_documents(question, current_user["id"])
+        
+        return {
+            "question": question,
+            "uploaded_pdfs": pdfs,
+            "retrieved_documents": [
+                {
+                    "filename": doc["filename"],
+                    "similarity": doc["similarity"],
+                    "content_preview": doc["content"][:200] + "..." if len(doc["content"]) > 200 else doc["content"],
+                    "content_length": len(doc["content"]),
+                }
+                for doc in docs[:10]
+            ]
+        }
+    except Exception as e:
+        return {"error": str(e), "traceback": str(e.__traceback__)}
+
+
+@app.get("/api/debug/extracted-text")
+def debug_extracted_text(
+    filename: str,
+    current_user: dict = Depends(get_current_user),
+):
+    """Debug endpoint to see what text was extracted from a PDF."""
+    try:
+        from services.document_service import extract_text_from_pdf, get_user_upload_dir
+        from pathlib import Path
+        
+        upload_dir = get_user_upload_dir(current_user["id"])
+        pdf_path = upload_dir / filename
+        
+        if not pdf_path.exists():
+            return {"error": f"File {filename} not found"}
+        
+        text = extract_text_from_pdf(pdf_path)
+        
+        return {
+            "filename": filename,
+            "total_characters": len(text),
+            "first_500_chars": text[:500],
+            "last_500_chars": text[-500:] if len(text) > 500 else text,
+        }
+    except Exception as e:
+        return {"error": str(e), "traceback": str(e.__traceback__)}
 
 
 @app.get("/ready")
