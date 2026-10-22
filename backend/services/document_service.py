@@ -12,6 +12,7 @@ from .index_service import (
     build_index,
     delete_knowledge_base,
 )
+from .chunk_service import chunk_text
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 UPLOADS_DIR = BASE_DIR / "uploads"
@@ -19,28 +20,6 @@ UPLOADS_DIR = BASE_DIR / "uploads"
 
 def get_user_upload_dir(user_id: int):
     return UPLOADS_DIR / "users" / str(user_id)
-
-
-def chunk_text(
-    text: str,
-    chunk_size: int = 600,
-    overlap: int = 150,
-):
-    clean_text = " ".join(text.split())
-
-    chunks = []
-    start = 0
-
-    while start < len(clean_text):
-        end = start + chunk_size
-        chunks.append(clean_text[start:end])
-
-        if end >= len(clean_text):
-            break
-
-        start = end - overlap
-
-    return chunks
 
 
 def extract_text_from_pdf(pdf_path: Path):
