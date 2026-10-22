@@ -46,11 +46,17 @@ export default function KnowledgeBasePage() {
       if (response.ok) {
         const data = await response.json();
         setUploadedDocs(data.documents || []);
+      } else if (response.status === 401) {
+        console.error("Authentication failed - token may be expired");
+        showToast("Session expired. Please log in again.", "error");
+        router.push("/login");
       } else {
         console.error("Failed to fetch documents:", response.status);
+        showToast(`Failed to fetch documents: ${response.status}`, "error");
       }
     } catch (err) {
       console.error("Failed to fetch documents", err);
+      showToast("Network error. Please check your connection.", "error");
     }
   };
 
@@ -75,6 +81,9 @@ export default function KnowledgeBasePage() {
         setDocumentFile(null);
         fetchDocuments(token);
         showToast("Document uploaded successfully!");
+      } else if (response.status === 401) {
+        showToast("Session expired. Please log in again.", "error");
+        router.push("/login");
       } else {
         showToast(`Upload failed: ${data.detail || "Unknown error"}`, "error");
       }

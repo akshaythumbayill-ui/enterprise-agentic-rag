@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-import { Send, Loader2, Sparkles, FileText, X } from "lucide-react";
+import { Send, Loader2, Sparkles, FileText } from "lucide-react";
 import AppLayout from "@/components/AppLayout";
 
 interface Message {
@@ -87,6 +87,16 @@ export default function AssistantPage() {
             sources: data.sources || [],
           },
         ]);
+      } else if (response.status === 401) {
+        console.error("Authentication failed - token may be expired");
+        setMessages((prev) => [
+          ...prev,
+          {
+            role: "assistant",
+            content: "Your session has expired. Please log in again.",
+          },
+        ]);
+        setTimeout(() => router.push("/login"), 2000);
       } else {
         console.error("Chat error response:", data);
         setMessages((prev) => [
