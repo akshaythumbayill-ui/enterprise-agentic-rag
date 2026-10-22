@@ -25,6 +25,7 @@ export default function AssistantPage() {
   const [loading, setLoading] = useState(false);
   const [agenticMode, setAgenticMode] = useState(false);
   const [showSources, setShowSources] = useState(false);
+  const [hasDocuments, setHasDocuments] = useState(false);
 
   useEffect(() => {
     const storedToken = localStorage.getItem("token");
@@ -32,6 +33,16 @@ export default function AssistantPage() {
       router.push("/login");
     } else {
       setToken(storedToken);
+      // Check if user has documents
+      fetch("/api/documents", {
+        headers: { Authorization: `Bearer ${storedToken}` },
+      })
+        .then((res) => res.json())
+        .then((data) => {
+          const docs = data.documents || [];
+          setHasDocuments(docs.length > 0);
+        })
+        .catch((err) => console.error("Failed to check documents:", err));
     }
   }, [router]);
 
@@ -65,6 +76,9 @@ export default function AssistantPage() {
           setSessionId(data.session_id);
         }
 
+        console.log("Chat response:", data);
+        console.log("Sources:", data.sources);
+
         setMessages((prev) => [
           ...prev,
           {
@@ -74,6 +88,7 @@ export default function AssistantPage() {
           },
         ]);
       } else {
+        console.error("Chat error response:", data);
         setMessages((prev) => [
           ...prev,
           {
@@ -157,23 +172,34 @@ export default function AssistantPage() {
               {messages.length === 0 ? (
                 <div className="max-w-2xl mx-auto py-12">
                   <div className="text-center mb-8">
-                    <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                      <Sparkles className="w-8 h-8 text-primary" />
+                    <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                      <Sparkles className="w-8 h-8 text-blue-600" />
                     </div>
                     <h2 className="text-h2 mb-2">Start a conversation</h2>
                     <p className="text-muted">
-                      Ask questions about your uploaded documents
+                      {hasDocuments
+                        ? "Ask questions about your uploaded documents"
+                        : "Upload documents to start asking questions"}
                     </p>
                   </div>
+
+                  {!hasDocuments && (
+                    <div className="text-center mb-8 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+                      <p className="text-sm text-yellow-800">
+                        <strong>No documents uploaded yet.</strong> Go to the
+                        Knowledge Base to upload PDFs first.
+                      </p>
+                    </div>
+                  )}
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     {suggestedPrompts.map((prompt) => (
                       <button
                         key={prompt}
                         onClick={() => setInput(prompt)}
-                        className="text-left p-4 rounded-lg border border-border hover:border-primary hover:bg-blue-50 transition-colors"
+                        className="text-left p-4 rounded-lg border border-gray-200 hover:border-blue-600 hover:bg-blue-50 transition-colors"
                       >
-                        <p className="text-sm text-text-primary">{prompt}</p>
+                        <p className="text-sm text-gray-900">{prompt}</p>
                       </button>
                     ))}
                   </div>
@@ -190,8 +216,8 @@ export default function AssistantPage() {
                       <div
                         className={`max-w-[85%] lg:max-w-[75%] rounded-lg px-4 py-3 ${
                           msg.role === "user"
-                            ? "bg-primary text-white"
-                            : "bg-surface border border-border"
+                            ? "bg-blue-600 text-white shadow-sm"
+                            : "bg-white border border-gray-200"
                         }`}
                       >
                         {msg.role === "assistant" ? (
@@ -243,10 +269,10 @@ export default function AssistantPage() {
                             </ReactMarkdown>
 
                             {msg.sources && msg.sources.length > 0 && (
-                              <div className="mt-3 pt-3 border-t border-border">
+                              <div className="mt-3 pt-3 border-t border-gray-200">
                                 <button
                                   onClick={() => setShowSources(!showSources)}
-                                  className="flex items-center gap-2 text-xs text-text-secondary hover:text-text-primary transition-colors"
+                                  className="flex items-center gap-2 text-xs text-gray-600 hover:text-gray-900 transition-colors"
                                 >
                                   <FileText className="w-3 h-3" />
                                   <span>
@@ -259,11 +285,11 @@ export default function AssistantPage() {
                                     {msg.sources.map((source, i) => (
                                       <div
                                         key={i}
-                                        className="text-xs text-text-secondary flex items-center gap-2"
+                                        className="text-xs text-gray-600 flex items-center gap-2"
                                       >
                                         <FileText className="w-3 h-3" />
                                         <span>{source.filename}</span>
-                                        <span className="text-text-secondary/60">
+                                        <span className="text-gray-400">
                                           ({(source.similarity * 100).toFixed(1)}%)
                                         </span>
                                       </div>
