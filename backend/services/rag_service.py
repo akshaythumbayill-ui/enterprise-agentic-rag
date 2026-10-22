@@ -33,7 +33,7 @@ def load_knowledge_base(user_id: int):
 def retrieve_documents(
     question: str,
     user_id: int,
-    k: int = 2,
+    k: int = 4,
 ):
     index, mapping = load_knowledge_base(user_id)
 
@@ -45,16 +45,28 @@ def retrieve_documents(
         normalize_embeddings=True,
     )
 
-    _, indices = index.search(
+    distances, indices = index.search(
         np.asarray(embedding, dtype=np.float32),
         min(k, index.ntotal),
     )
 
-    return [
-        mapping[int(index_id)]
-        for index_id in indices[0]
-        if index_id != -1
-    ]
+    # Return documents with relevance scores
+    documents_with_scores = []
+    for distance, index_id in zip(distances[0], indices[0]):
+        if index_id != -1:
+            doc = mapping[int(index_id)]
+            # Convert distance to similarity score (cosine distance to similarity)
+            similarity = 1 - distance
+            documents_with_scores.append({
+                **doc,
+                "similarity": float(similarity),
+                "distance": float(distance),
+            })
+
+    # Sort by similarity (descending)
+    documents_with_scores.sort(key=lambda x: x["similarity"], reverse=True)
+
+    return documents_with_scores
 
 
 def answer_question(
@@ -71,13 +83,21 @@ def answer_question(
             "sources": [],
         }
 
-    context = "\n\n".join(
-        f"Source: {document['filename']}\n{document['content']}"
-        for document in documents
-    )
+    # Use top-k most relevant documents
+    top_documents = documents[:3]
+    
+    # Include relevance scores in context for better LLM understanding
+    context_parts = []
+    for i, doc in enumerate(top_documents, 1):
+        context_parts.append(
+            f"Source {i} (relevance: {doc['similarity']:.2f}, file: {doc['filename']}):\n{doc['content']}"
+        )
+    
+    context = "\n\n".join(context_parts)
 
     prompt = f"""
 Use only the company-document context as the factual source.
+Context is ordered by relevance (highest similarity first).
 
 Conversation history:
 {conversation_history}
@@ -90,6 +110,8 @@ Question:
 
 If the answer is unavailable in the documents, say:
 "I could not find that information in your documents."
+
+Provide a comprehensive answer based on the most relevant document sections.
 """
 
     answer = ask_llm(prompt)
@@ -101,10 +123,9 @@ If the answer is unavailable in the documents, say:
             {
                 "id": document["id"],
                 "filename": document["filename"],
-                # Keep exact retrieved evidence available to agentic synthesis.
-                # The frontend renders only filename/url fields, so this remains internal.
                 "content": document["content"],
+                "similarity": document["similarity"],
             }
-            for document in documents
+            for document in top_documents
         ],
     }

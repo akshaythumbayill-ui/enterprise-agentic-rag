@@ -404,47 +404,57 @@ export default function DashboardPage() {
                 messages.map((msg, idx) => (
                   <div
                     key={idx}
-                    className={`flex ${
+                    className={`flex w-full ${
                       msg.role === "user" ? "justify-end" : "justify-start"
                     }`}
                   >
                     <div
-                      className={`max-w-[80%] rounded-2xl px-5 py-3 ${
+                      className={`max-w-[85%] lg:max-w-[75%] rounded-2xl px-5 py-4 leading-relaxed ${
                         msg.role === "user"
                           ? "bg-emerald-600 text-white shadow-lg shadow-emerald-950/40"
                           : "bg-black/20 text-white border border-emerald-100/20"
                       }`}
                     >
                       {msg.role === "assistant" ? (
-                        <ReactMarkdown
-                          remarkPlugins={[remarkGfm]}
-                          components={{
-                            p: ({ children }) => <p className="mb-2 last:mb-0">{children}</p>,
-                            ul: ({ children }) => <ul className="list-disc list-inside mb-2">{children}</ul>,
-                            ol: ({ children }) => <ol className="list-decimal list-inside mb-2">{children}</ol>,
-                            li: ({ children }) => <li className="ml-2">{children}</li>,
-                            code: ({ children }) => (
-                              <code className="bg-emerald-500/15 px-1.5 py-0.5 rounded text-sm font-mono">
-                                {children}
-                              </code>
-                            ),
-                            pre: ({ children }) => (
-                              <pre className="bg-black/30 p-3 rounded-lg overflow-x-auto mb-2">
-                                {children}
-                              </pre>
-                            ),
-                            strong: ({ children }) => <strong className="font-semibold">{children}</strong>,
-                            a: ({ children, href }) => (
-                              <a href={href} className="text-emerald-300 hover:text-emerald-200 underline" target="_blank" rel="noopener noreferrer">
-                                {children}
-                              </a>
-                            ),
-                          }}
-                        >
-                          {msg.content}
-                        </ReactMarkdown>
+                        <div className="prose prose-invert prose-sm max-w-none">
+                          <ReactMarkdown
+                            remarkPlugins={[remarkGfm]}
+                            components={{
+                              p: ({ children }) => <p className="mb-3 last:mb-0 leading-relaxed">{children}</p>,
+                              ul: ({ children }) => <ul className="list-disc list-inside mb-3 space-y-1 ml-4">{children}</ul>,
+                              ol: ({ children }) => <ol className="list-decimal list-inside mb-3 space-y-1 ml-4">{children}</ol>,
+                              li: ({ children }) => <li className="leading-relaxed">{children}</li>,
+                              code: ({ children }) => (
+                                <code className="bg-emerald-500/15 px-2 py-1 rounded text-sm font-mono leading-relaxed">
+                                  {children}
+                                </code>
+                              ),
+                              pre: ({ children }) => (
+                                <pre className="bg-black/30 p-4 rounded-lg overflow-x-auto mb-3 text-sm leading-relaxed">
+                                  {children}
+                                </pre>
+                              ),
+                              strong: ({ children }) => <strong className="font-semibold text-white">{children}</strong>,
+                              a: ({ children, href }) => (
+                                <a href={href} className="text-emerald-300 hover:text-emerald-200 underline break-all" target="_blank" rel="noopener noreferrer">
+                                  {children}
+                                </a>
+                              ),
+                              h1: ({ children }) => <h1 className="text-xl font-bold mb-3 text-white">{children}</h1>,
+                              h2: ({ children }) => <h2 className="text-lg font-bold mb-2 text-white">{children}</h2>,
+                              h3: ({ children }) => <h3 className="text-base font-bold mb-2 text-white">{children}</h3>,
+                              blockquote: ({ children }) => (
+                                <blockquote className="border-l-4 border-emerald-500 pl-4 italic text-emerald-100/80 my-3">
+                                  {children}
+                                </blockquote>
+                              ),
+                            }}
+                          >
+                            {msg.content}
+                          </ReactMarkdown>
+                        </div>
                       ) : (
-                        msg.content
+                        <p className="leading-relaxed">{msg.content}</p>
                       )}
                     </div>
                   </div>
