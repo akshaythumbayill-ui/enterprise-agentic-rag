@@ -1,12 +1,18 @@
 from pathlib import Path
 from datetime import datetime
 
-from pypdf import PdfReader
+try:
+    from pymupdf import fitz as Document
+    USE_PYMUPDF = True
+except ImportError:
+    from pypdf import PdfReader
+    USE_PYMUPDF = False
 
 from .index_service import (
     build_index,
     delete_knowledge_base,
 )
+from .chunk_service import chunk_text
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 UPLOADS_DIR = BASE_DIR / "uploads"
@@ -16,45 +22,43 @@ def get_user_upload_dir(user_id: int):
     return UPLOADS_DIR / "users" / str(user_id)
 
 
-def chunk_text(
-    text: str,
-    chunk_size: int = 800,
-    overlap: int = 150,
-):
-    clean_text = " ".join(text.split())
-
-    chunks = []
-    start = 0
-
-    while start < len(clean_text):
-        end = start + chunk_size
-        chunks.append(clean_text[start:end])
-
-        if end >= len(clean_text):
-            break
-
-        start = end - overlap
-
-    return chunks
-
-
 def extract_text_from_pdf(pdf_path: Path):
-    try:
-        reader = PdfReader(str(pdf_path))
-    except Exception as error:
-        raise ValueError(f"Could not read PDF {pdf_path.name}.") from error
+    """Extract text from PDF using PyMuPDF (fitz) or pypdf as fallback."""
+    if USE_PYMUPDF:
+        try:
+            doc = Document(str(pdf_path))
+            text = ""
+            for page in doc:
+                text += page.get_text()
+            doc.close()
+            
+            if not text.strip():
+                raise ValueError(f"No readable text found in {pdf_path.name}.")
+            
+            print(f"Extracted {len(text)} characters from {pdf_path.name}")
+            print(f"First 200 chars: {text[:200]}")
+            return text
+        except Exception as error:
+            raise ValueError(f"Could not read PDF {pdf_path.name} with PyMuPDF: {error}") from error
+    else:
+        try:
+            reader = PdfReader(str(pdf_path))
+        except Exception as error:
+            raise ValueError(f"Could not read PDF {pdf_path.name}.") from error
 
-    text = "\n".join(
-        page.extract_text() or ""
-        for page in reader.pages
-    ).strip()
+        text = "\n".join(
+            page.extract_text() or ""
+            for page in reader.pages
+        ).strip()
 
-    if not text:
-        raise ValueError(
-            f"No readable text found in {pdf_path.name}."
-        )
-
-    return text
+        if not text:
+            raise ValueError(
+                f"No readable text found in {pdf_path.name}."
+            )
+        
+        print(f"Extracted {len(text)} characters from {pdf_path.name} using pypdf")
+        print(f"First 200 chars: {text[:200]}")
+        return text
 
 
 def build_index_from_uploaded_pdfs(user_id: int):
@@ -68,6 +72,7 @@ def build_index_from_uploaded_pdfs(user_id: int):
 
     for pdf_file in pdf_files:
         text = extract_text_from_pdf(pdf_file)
+        print(f"Chunking text from {pdf_file.name} into {len(text)} characters")
 
         for chunk in chunk_text(text):
             documents.append(
@@ -76,7 +81,8 @@ def build_index_from_uploaded_pdfs(user_id: int):
                     "content": chunk,
                 }
             )
-
+    
+    print(f"Total chunks created: {len(documents)}")
     return build_index(documents, user_id)
 
 def list_uploaded_pdfs(user_id: int):
