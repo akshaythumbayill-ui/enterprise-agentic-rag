@@ -23,6 +23,7 @@ def greeting_response(question: str) -> str | None:
 def select_tool(
     question: str,
     conversation_history: str = "",
+    agentic: bool = False,
 ) -> str:
     if greeting_response(question):
         return "greeting"
@@ -31,50 +32,55 @@ def select_tool(
     if any(word in normalized_question for word in ("what time", "current time", "today's date", "what date", "what day")):
         return "time"
 
-    web_search_markers = (
-        "search the web",
-        "search online",
-        "search from web",
-        "search on web",
-        "search from the web",
-        "search on the web",
-        "search the internet",
-        "search internet",
-        "look up online",
-        "look up on web",
-        "look on web",
-        "lookup on web",
-        "find online",
-        "find on web",
-        "find from web",
-        "from web",
-        "from the web",
-        "on the internet",
-        "latest news",
-        "current news",
-        "recent news",
-        "web search",
-        "online sources",
-        "latest information",
-        "as of today",
-        "current price",
-        "current status",
-        "current population",
-        "recently",
-        "google it",
-        "google this",
-    )
-    if any(marker in normalized_question for marker in web_search_markers) or (
-        "current " in normalized_question and "current time" not in normalized_question
-    ):
-        return "web_search"
+    # Web search is only available in agentic mode
+    if agentic:
+        web_search_markers = (
+            "search the web",
+            "search online",
+            "search from web",
+            "search on web",
+            "search from the web",
+            "search on the web",
+            "search the internet",
+            "search internet",
+            "look up online",
+            "look up on web",
+            "look on web",
+            "lookup on web",
+            "find online",
+            "find on web",
+            "find from web",
+            "from web",
+            "from the web",
+            "on the internet",
+            "latest news",
+            "current news",
+            "recent news",
+            "web search",
+            "online sources",
+            "latest information",
+            "as of today",
+            "current price",
+            "current status",
+            "current population",
+            "recently",
+            "google it",
+            "google this",
+        )
+        if any(marker in normalized_question for marker in web_search_markers) or (
+            "current " in normalized_question and "current time" not in normalized_question
+        ):
+            return "web_search"
 
     if any(symbol in normalized_question for symbol in ("+", "-", "*", "/", "%")) or any(
         word in normalized_question for word in ("calculate", "plus", "minus", "times", "divided")
     ):
         return "calculator"
 
-    prompt = f"""
+    # In non-agentic mode, only use rag for everything else
+    # In agentic mode, use LLM to decide between tools
+    if agentic:
+        prompt = f"""
 You select one tool for an enterprise assistant.
 
 Tools:
@@ -94,19 +100,22 @@ Current question:
 {question}
 """
 
-    try:
-        response = ask_llm(prompt, temperature=0)
+        try:
+            response = ask_llm(prompt, temperature=0)
 
-        response = re.sub(
-            r"^```(?:json)?\s*|\s*```$",
-            "",
-            response.strip(),
-            flags=re.IGNORECASE,
-        )
+            response = re.sub(
+                r"^```(?:json)?\s*|\s*```$",
+                "",
+                response.strip(),
+                flags=re.IGNORECASE,
+            )
 
-        tool = json.loads(response).get("tool", "rag").lower()
+            tool = json.loads(response).get("tool", "rag").lower()
 
-        return tool if tool in VALID_TOOLS else "rag"
+            return tool if tool in VALID_TOOLS else "rag"
 
-    except Exception:
+        except Exception:
+            return "rag"
+    else:
+        # Non-agentic mode: default to rag for everything
         return "rag"

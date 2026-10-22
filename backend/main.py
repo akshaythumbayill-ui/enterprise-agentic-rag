@@ -329,6 +329,7 @@ def chat(
                 question_validation.sanitized_value,
                 history,
                 current_user["id"],
+                request.agentic,
             )
         
         save_turn(

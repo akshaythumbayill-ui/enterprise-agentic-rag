@@ -17,12 +17,14 @@ class AgentState(TypedDict, total=False):
     conversation_history: str
     selected_tool: str
     result: dict[str, Any]
+    agentic: bool
 
 def planner_node(state: AgentState):
     return {
         "selected_tool": select_tool(
             state["question"],
             state.get("conversation_history", ""),
+            state.get("agentic", False),
         )
     }
 
@@ -69,6 +71,7 @@ def web_search_node(state: AgentState):
 
 
 def select_tool_path(state: AgentState):
+    # Web search is only available in agentic mode (enforced by planner_node)
     return state["selected_tool"]
 
 
