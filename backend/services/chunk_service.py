@@ -1,10 +1,11 @@
 def chunk_text(
     text: str,
-    chunk_size: int = 800,
-    overlap: int = 200
+    chunk_size: int = 600,
+    overlap: int = 150
 ):
     """
     Improved chunking with overlap for better semantic search.
+    Smaller chunks (600) with moderate overlap (150) for more precise retrieval.
     Chunks overlap to preserve context between segments.
     """
     chunks = []
