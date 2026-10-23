@@ -28,6 +28,24 @@ export async function POST(request: NextRequest) {
       body: newFormData,
     });
 
+    // Handle 502 Bad Gateway (backend down)
+    if (response.status === 502) {
+      console.error("Backend is down (502)");
+      return NextResponse.json(
+        { detail: "Backend service is temporarily unavailable. Please try again in a few moments." },
+        { status: 503 }
+      );
+    }
+
+    // Handle 401 Unauthorized
+    if (response.status === 401) {
+      console.error("Authentication failed (401)");
+      return NextResponse.json(
+        { detail: "Authentication failed. Please log in again." },
+        { status: 401 }
+      );
+    }
+
     const contentType = response.headers.get("content-type");
     console.log("Upload response status:", response.status);
     console.log("Response content-type:", contentType);
@@ -37,7 +55,7 @@ export async function POST(request: NextRequest) {
       const text = await response.text();
       console.error("Non-JSON response from backend:", text.substring(0, 500));
       return NextResponse.json(
-        { detail: "Backend returned an error. Please check if the backend is running and has enough memory." },
+        { detail: "Backend returned an error. The service may be restarting. Please try again in a few moments." },
         { status: response.status }
       );
     }
@@ -48,8 +66,8 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error("Upload error:", error);
     return NextResponse.json(
-      { detail: "Internal server error: " + (error as Error).message },
-      { status: 500 }
+      { detail: "Network error: Unable to connect to backend. The service may be down." },
+      { status: 503 }
     );
   }
 }

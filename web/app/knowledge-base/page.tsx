@@ -22,6 +22,7 @@ export default function KnowledgeBasePage() {
     text: string;
     type: "success" | "error";
   } | null>(null);
+  const [backendStatus, setBackendStatus] = useState<"healthy" | "down" | "unknown">("unknown");
 
   const showToast = (text: string, type: "success" | "error" = "success") => {
     setToastMessage({ text, type });
@@ -34,9 +35,21 @@ export default function KnowledgeBasePage() {
       router.push("/login");
     } else {
       setToken(storedToken);
+      checkBackendHealth();
       fetchDocuments(storedToken);
     }
   }, [router]);
+
+  const checkBackendHealth = async () => {
+    try {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/health`);
+      setBackendStatus(response.ok ? "healthy" : "down");
+      return response.ok;
+    } catch {
+      setBackendStatus("down");
+      return false;
+    }
+  };
 
   const fetchDocuments = async (authToken: string) => {
     try {
@@ -84,6 +97,9 @@ export default function KnowledgeBasePage() {
       } else if (response.status === 401) {
         showToast("Session expired. Please log in again.", "error");
         router.push("/login");
+      } else if (response.status === 503) {
+        showToast("Backend is temporarily unavailable. Please try again.", "error");
+        setBackendStatus("down");
       } else {
         showToast(`Upload failed: ${data.detail || "Unknown error"}`, "error");
       }
@@ -148,11 +164,20 @@ export default function KnowledgeBasePage() {
       <div className="min-h-screen">
         {/* Header */}
         <header className="header">
-          <div>
-            <h1 className="text-h1">Knowledge Base</h1>
-            <p className="text-muted mt-1">
-              Manage your documents and knowledge sources
-            </p>
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-h1">Knowledge Base</h1>
+              <p className="text-muted mt-1">
+                Manage your documents and knowledge sources
+              </p>
+            </div>
+            {backendStatus === "down" && (
+              <div className="px-4 py-2 bg-red-50 border border-red-200 rounded-md">
+                <p className="text-sm text-red-800 font-medium">
+                  ⚠️ Backend is temporarily unavailable
+                </p>
+              </div>
+            )}
           </div>
         </header>
 
@@ -178,7 +203,7 @@ export default function KnowledgeBasePage() {
                 </div>
                 <button
                   type="submit"
-                  disabled={!documentFile || uploading}
+                  disabled={!documentFile || uploading || backendStatus === "down"}
                   className="btn btn-primary"
                 >
                   {uploading ? (
