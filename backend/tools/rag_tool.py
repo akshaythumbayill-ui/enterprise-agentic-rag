@@ -1,4 +1,4 @@
-from backend.services.rag_service import answer_question
+from services.rag_service import answer_question
 
 
 class RagTool:
