@@ -1,9 +1,10 @@
 import json
+import gc
 
 import faiss
 import numpy as np
 
-from .embedding_service import get_embedding_model
+from .embedding_service import get_embedding_model, clear_model_from_memory
 from .index_service import get_knowledge_base_paths
 from .llm import ask_llm
 
@@ -33,7 +34,7 @@ def load_knowledge_base(user_id: int):
 def retrieve_documents(
     question: str,
     user_id: int,
-    k: int = 15,
+    k: int = 10,  # Reduced from 15 to save memory
 ):
     """
     Enhanced retrieval with more documents and better filtering.
@@ -73,6 +74,10 @@ def retrieve_documents(
     # Sort by similarity (descending)
     documents_with_scores.sort(key=lambda x: x["similarity"], reverse=True)
 
+    # Clear embedding from memory
+    del embedding
+    gc.collect()
+
     return documents_with_scores
 
 
@@ -90,8 +95,8 @@ def answer_question(
             "sources": [],
         }
 
-    # Use top-7 most relevant documents for better coverage
-    top_documents = documents[:7]
+    # Use top-5 most relevant documents (reduced from 7 to save memory)
+    top_documents = documents[:5]
     
     # Filter out low-relevance documents (similarity < 0.3)
     relevant_documents = [doc for doc in top_documents if doc['similarity'] >= 0.3]
@@ -144,6 +149,9 @@ CONVERSATION HISTORY (for context):
 ANSWER:"""
 
     answer = ask_llm(prompt, temperature=0.1, max_tokens=2048)
+
+    # Clear memory after processing
+    gc.collect()
 
     return {
         "question": question,

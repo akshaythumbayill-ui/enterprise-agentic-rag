@@ -1,10 +1,11 @@
 import json
+import gc
 from pathlib import Path
 
 import faiss
 import numpy as np
 
-from .embedding_service import get_embedding_model
+from .embedding_service import get_embedding_model, clear_model_from_memory
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 DATA_DIR = BASE_DIR / "data"
@@ -45,13 +46,24 @@ def build_index(documents: list[dict], user_id: int):
         model = get_embedding_model()
         print(f"Generating embeddings for {len(texts)} chunks...")
         
-        embeddings = model.encode(
-            texts,
-            convert_to_numpy=True,
-            normalize_embeddings=True,
-            show_progress_bar=False,
-        )
-
+        # Process in batches to reduce memory
+        batch_size = 32
+        all_embeddings = []
+        
+        for i in range(0, len(texts), batch_size):
+            batch_texts = texts[i:i + batch_size]
+            batch_embeddings = model.encode(
+                batch_texts,
+                convert_to_numpy=True,
+                normalize_embeddings=True,
+                show_progress_bar=False,
+            )
+            all_embeddings.append(batch_embeddings)
+            # Clear memory after each batch
+            del batch_embeddings
+            gc.collect()
+        
+        embeddings = np.vstack(all_embeddings)
         embeddings = np.asarray(embeddings, dtype=np.float32)
         print(f"Embeddings shape: {embeddings.shape}")
 
@@ -69,12 +81,18 @@ def build_index(documents: list[dict], user_id: int):
                 ensure_ascii=False,
             )
 
+        # Clear model from memory after building index
+        clear_model_from_memory()
+        gc.collect()
+
         return {
             "documents_indexed": len(normalized_documents),
             "index_path": str(paths["index_path"]),
         }
     except Exception as e:
         print(f"Error building index: {e}")
+        clear_model_from_memory()
+        gc.collect()
         raise ValueError(f"Failed to build index: {str(e)}") from e
 
 def delete_knowledge_base(user_id: int):
