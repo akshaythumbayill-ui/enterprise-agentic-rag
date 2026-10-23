@@ -14,7 +14,7 @@ services:
       - key: TAVILY_API_KEY
         sync: false
       - key: GROQ_MODEL
-        value: openai/gpt-oss-20b
+        value: gemma2-9b-it
       - key: MAX_UPLOAD_BYTES
         value: "10485760"
       - key: TAVILY_MAX_RESULTS
