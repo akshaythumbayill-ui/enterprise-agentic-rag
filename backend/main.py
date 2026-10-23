@@ -281,69 +281,75 @@ async def upload_documents(
     files: list[UploadFile] = File(...),
     current_user: dict = Depends(get_current_user),
 ):
-    upload_dir = get_user_upload_dir(current_user["id"])
-    upload_dir.mkdir(parents=True, exist_ok=True)
-
-    saved_files = []
-    seen_uploads = set()
-
-    for file in files:
-        filename = Path(file.filename or "").name
-
-        # Validate filename
-        filename_validation = validation_service.validate_filename(filename)
-        if not filename_validation.is_valid:
-            raise HTTPException(
-                status_code=400,
-                detail=f"Invalid filename: {filename_validation.errors[0]}",
-            )
-
-        sanitized_filename = filename_validation.sanitized_value
-
-        if (
-            not sanitized_filename
-            or not sanitized_filename.lower().endswith(".pdf")
-        ):
-            raise HTTPException(
-                status_code=400,
-                detail=f"{sanitized_filename} is not a PDF file.",
-            )
-
-        destination = upload_dir / sanitized_filename
-        contents = await file.read(MAX_UPLOAD_BYTES + 1)
-
-        if len(contents) > MAX_UPLOAD_BYTES:
-            raise HTTPException(status_code=413, detail="PDF exceeds the 10 MB limit.")
-
-        if not contents.startswith(b"%PDF"):
-            raise HTTPException(status_code=400, detail=f"{sanitized_filename} is not a readable PDF.")
-
-        fingerprint = (sanitized_filename, hashlib.sha256(contents).hexdigest())
-        if fingerprint in seen_uploads:
-            continue
-        seen_uploads.add(fingerprint)
-        destination.write_bytes(contents)
-
-        saved_files.append(sanitized_filename)
-
     try:
-        result = build_index_from_uploaded_pdfs(current_user["id"])
-    except (ValueError, FileNotFoundError) as error:
-        logger.error(f"Index build failed: {error}")
-        for filename in saved_files:
-            (upload_dir / filename).unlink(missing_ok=True)
-        raise HTTPException(status_code=400, detail=str(error)) from error
-    except Exception as error:
-        logger.exception("Unexpected error during index build")
-        for filename in saved_files:
-            (upload_dir / filename).unlink(missing_ok=True)
-        raise HTTPException(status_code=500, detail=f"Failed to index PDF: {str(error)}") from error
+        upload_dir = get_user_upload_dir(current_user["id"])
+        upload_dir.mkdir(parents=True, exist_ok=True)
 
-    return {
-        "message": "Your PDF files were uploaded and indexed.",
-        "uploaded_files": saved_files,
-        **result,
-    }
+        saved_files = []
+        seen_uploads = set()
+
+        for file in files:
+            filename = Path(file.filename or "").name
+
+            # Validate filename
+            filename_validation = validation_service.validate_filename(filename)
+            if not filename_validation.is_valid:
+                raise HTTPException(
+                    status_code=400,
+                    detail=f"Invalid filename: {filename_validation.errors[0]}",
+                )
+
+            sanitized_filename = filename_validation.sanitized_value
+
+            if (
+                not sanitized_filename
+                or not sanitized_filename.lower().endswith(".pdf")
+            ):
+                raise HTTPException(
+                    status_code=400,
+                    detail=f"{sanitized_filename} is not a PDF file.",
+                )
+
+            destination = upload_dir / sanitized_filename
+            contents = await file.read(MAX_UPLOAD_BYTES + 1)
+
+            if len(contents) > MAX_UPLOAD_BYTES:
+                raise HTTPException(status_code=413, detail="PDF exceeds the 10 MB limit.")
+
+            if not contents.startswith(b"%PDF"):
+                raise HTTPException(status_code=400, detail=f"{sanitized_filename} is not a readable PDF.")
+
+            fingerprint = (sanitized_filename, hashlib.sha256(contents).hexdigest())
+            if fingerprint in seen_uploads:
+                continue
+            seen_uploads.add(fingerprint)
+            destination.write_bytes(contents)
+
+            saved_files.append(sanitized_filename)
+
+        try:
+            result = build_index_from_uploaded_pdfs(current_user["id"])
+        except (ValueError, FileNotFoundError) as error:
+            logger.error(f"Index build failed: {error}")
+            for filename in saved_files:
+                (upload_dir / filename).unlink(missing_ok=True)
+            raise HTTPException(status_code=400, detail=str(error)) from error
+        except Exception as error:
+            logger.exception("Unexpected error during index build")
+            for filename in saved_files:
+                (upload_dir / filename).unlink(missing_ok=True)
+            raise HTTPException(status_code=500, detail=f"Failed to index PDF: {str(error)}") from error
+
+        return {
+            "message": "Your PDF files were uploaded and indexed.",
+            "uploaded_files": saved_files,
+            **result,
+        }
+    except HTTPException:
+        raise
+    except Exception as error:
+        logger.exception("Unexpected error during upload")
+        raise HTTPException(status_code=500, detail=f"Upload failed: {str(error)}") from error
 @app.post("/api/documents/rebuild-index")
 def rebuild_index(
     current_user: dict = Depends(get_current_user),

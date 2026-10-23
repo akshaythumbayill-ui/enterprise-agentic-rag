@@ -13,3 +13,26 @@ backend/uploads/*
 *.index
 *.log
 .streamlit/secrets.toml
+
+# Frontend build artifacts
+web/.next/
+web/next-env.d.ts
+web/node_modules/
+web/package-lock.json
+
+# Log files
+*_live.log
+*_live_error.log
+*_restart.log
+*_restart_error.log
+*_smoke.log
+*_smoke_error.log
+
+# Old/unused directories
+documents/
+frontend/
+nginx/
+
+# Unused compose files
+docker-compose-*.yml
+!docker-compose.yml

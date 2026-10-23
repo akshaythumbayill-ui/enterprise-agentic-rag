@@ -28,14 +28,27 @@ export async function POST(request: NextRequest) {
       body: newFormData,
     });
 
-    const data = await response.json();
+    const contentType = response.headers.get("content-type");
     console.log("Upload response status:", response.status);
+    console.log("Response content-type:", contentType);
+
+    // Check if response is JSON
+    if (!contentType || !contentType.includes("application/json")) {
+      const text = await response.text();
+      console.error("Non-JSON response from backend:", text.substring(0, 500));
+      return NextResponse.json(
+        { detail: "Backend returned an error. Please check if the backend is running and has enough memory." },
+        { status: response.status }
+      );
+    }
+
+    const data = await response.json();
 
     return NextResponse.json(data, { status: response.status });
   } catch (error) {
     console.error("Upload error:", error);
     return NextResponse.json(
-      { detail: "Internal server error" },
+      { detail: "Internal server error: " + (error as Error).message },
       { status: 500 }
     );
   }
