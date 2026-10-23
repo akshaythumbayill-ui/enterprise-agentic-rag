@@ -10,10 +10,9 @@ logger = logging.getLogger("enterprise_agent")
 # CURRENT ACTIVE Groq models (updated 2025)
 # These are the models that should work with an active account
 AVAILABLE_MODELS = [
-    "llama-3.3-70b-versatile",
-    "llama-3.1-70b-versatile",
-    "llama-3.3-8b-instant",
     "gemma2-9b-it",
+    "llama-3.3-8b-instant",
+    "llama-3.1-8b-instant",
     "mixtral-8x7b-32768",
 ]
 
@@ -86,7 +85,7 @@ def ask_llm(prompt: str, temperature: float = 0.1, max_tokens: int = 2048) -> st
     client = get_client()
     
     # Get preferred model from .env, or use list
-    preferred_model = os.getenv("GROQ_MODEL", "llama-3.3-70b-versatile")
+    preferred_model = os.getenv("GROQ_MODEL", "gemma2-9b-it")
     models_to_try = [preferred_model] + [m for m in AVAILABLE_MODELS if m != preferred_model] if preferred_model else AVAILABLE_MODELS
     
     last_error = None
